@@ -1,7 +1,30 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"github.com/Kekuz/don_banking_inc/domain"
+)
 
-func main(){
+func main() {
 	fmt.Println("This is Don banking APP!")
+	fmt.Println()
+	fmt.Println(makeAntonClient())
 }
+
+func makeAntonClient() domain.Client {
+	return domain.Client{
+		ClientId: 1,
+	FirstName : "Anton",
+	LastName :"Edlenko",
+	Accounts :[]domain.Account{
+		{
+			Currency: "RUB",
+			Balance: 10000,
+		},
+		{
+			Currency: "EUR",
+			Balance: 1000,
+		},
+	},
+	}
+} 
