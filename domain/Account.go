@@ -1,6 +1,6 @@
 package domain
 
 type Account struct {
-	Currency string
+	Currency
 	Balance float64
 }

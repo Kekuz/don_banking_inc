@@ -13,18 +13,18 @@ func main() {
 
 func makeAntonClient() domain.Client {
 	return domain.Client{
-		ClientId: 1,
-	FirstName : "Anton",
-	LastName :"Edlenko",
-	Accounts :[]domain.Account{
-		{
-			Currency: "RUB",
-			Balance: 10000,
+		ClientId:  1,
+		FirstName: "Anton",
+		LastName:  "Edlenko",
+		Accounts: []domain.Account{
+			{
+				Currency: domain.RUB,
+				Balance:  10000,
+			},
+			{
+				Currency: domain.EUR,
+				Balance:  1000,
+			},
 		},
-		{
-			Currency: "EUR",
-			Balance: 1000,
-		},
-	},
 	}
-} 
+}
