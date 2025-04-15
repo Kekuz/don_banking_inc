@@ -3,15 +3,15 @@ package main
 import (
 	"fmt"
 
-	data "github.com/Kekuz/don_banking_inc/data/repo"
-	domain "github.com/Kekuz/don_banking_inc/domain/repo"
+	"github.com/Kekuz/don_banking_inc/internal/service"
+	"github.com/Kekuz/don_banking_inc/internal/storage/csv"
 )
 
 func main() {
 	fmt.Println("This is Don banking APP!")
 	fmt.Println()
 	//fmt.Println(makeAntonClient())
-	var csv domain.StorageRepo = &data.CsvStorageRepo{}
+	var csv service.AccountStorage = &csv.Account{}
 	records := csv.Read()
     fmt.Println(records)
 }

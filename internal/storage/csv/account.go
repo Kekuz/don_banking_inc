@@ -6,7 +6,7 @@ import (
 	"os"
 )
 
-const filePath = "./client_mock_data.csv"
+const filePath = "./internal/storage/csv/client_mock_data.csv"
 
 type Account struct {}
 
