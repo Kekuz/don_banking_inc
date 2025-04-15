@@ -1,15 +1,16 @@
-package data
+package csv
 
 import (
 	"encoding/csv"
 	"log"
 	"os"
 )
+
 const filePath = "./client_mock_data.csv"
 
-type CsvStorageRepo struct {}
+type Account struct {}
 
-func (c *CsvStorageRepo) Read() [][]string {
+func (c *Account) Read() [][]string {
 	f, err := os.Open(filePath)
 	if err != nil {
 		log.Fatal("Unable to read input file "+filePath, err)
