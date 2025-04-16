@@ -30,3 +30,22 @@ func (c Currency) String() string {
 		return "wrong currency"
 	}
 }
+
+func ToCurrency(s string) Currency{
+	switch s {
+	case "RUB":
+		return RUB
+	case "EUR":
+		return EUR
+	case "YER":
+		return YER
+	case "BRL":
+		return BRL
+	case "TMT":
+		return TMT
+	case "CNY":
+		return CNY
+	default:
+		return UNKNOWN
+	}
+}
