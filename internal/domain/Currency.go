@@ -5,29 +5,23 @@ type Currency int
 const (
 	RUB Currency = iota
 	EUR
-	YER
-	BRL
-	TMT
-	CNY
+	USD
+	GBP
 	UNKNOWN
 )
 
 func (c Currency) String() string {
 	switch c {
 	case RUB:
-		return "RUB"
+		return "Рубли"
 	case EUR:
-		return "EUR"
-	case YER:
-		return "YER"
-	case BRL:
-		return "BRL"
-	case TMT:
-		return "TMT"
-	case CNY:
-		return "CNY"
+		return "Евро"
+	case USD:
+		return "Доллары"
+	case GBP:
+		return "Фунты"
 	default:
-		return "wrong currency"
+		return "Неверное значение"
 	}
 }
 
@@ -37,14 +31,10 @@ func ToCurrency(s string) Currency{
 		return RUB
 	case "EUR":
 		return EUR
-	case "YER":
-		return YER
-	case "BRL":
-		return BRL
-	case "TMT":
-		return TMT
-	case "CNY":
-		return CNY
+	case "USD":
+		return USD
+	case "GBP":
+		return GBP
 	default:
 		return UNKNOWN
 	}
