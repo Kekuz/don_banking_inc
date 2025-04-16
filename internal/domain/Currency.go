@@ -3,11 +3,11 @@ package domain
 type Currency int
 
 const (
-	RUB Currency = iota
+	UNKNOWN Currency = iota
+	RUB
 	EUR
 	USD
 	GBP
-	UNKNOWN
 )
 
 func (c Currency) String() string {
