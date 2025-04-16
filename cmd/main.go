@@ -9,9 +9,21 @@ import (
 )
 
 func main() {
+	accountHandler := cli.NewAccountHandler(&csv.AccountStorage{})
+	
 	fmt.Println("This is Don banking APP!")
 	fmt.Println()
 
-	accountHandler := cli.NewAccountHandler(&csv.AccountStorage{})
-	fmt.Println(accountHandler.GetAccountsById("2"))
+	for {
+		fmt.Println("Введите Id счета:")
+
+		var id string
+
+		fmt.Scanf("%s\n", &id)
+
+		fmt.Printf("Данные для id %s: ", id)
+
+		fmt.Println(accountHandler.GetAccountsById(id))
+	}
+
 }

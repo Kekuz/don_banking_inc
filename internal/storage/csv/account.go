@@ -9,7 +9,7 @@ import (
 	"github.com/Kekuz/don_banking_inc/internal/domain"
 )
 
-const filePath = "./internal/storage/csv/client_mock_data.csv"
+const filePath = "./client_mock_data.csv"
 
 type AccountStorage struct{}
 
