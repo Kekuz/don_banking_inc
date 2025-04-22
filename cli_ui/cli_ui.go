@@ -1,6 +1,7 @@
 package cliui
 
 import (
+	"encoding/json"
 	"fmt"
 	"strconv"
 	"strings"
@@ -78,6 +79,7 @@ func PrintUiClientMainMenu() {
 	fmt.Println("3. Положить деньги на счет (Не реализовано)")
 	fmt.Println("4. Снять деньги со счета (Не реализовано)")
 	fmt.Println("5. Удалить счет (Не реализовано)")
+	fmt.Println("6. Вывести сериализованные данные о клиенте")
 
 	var choose string
 	fmt.Scanf("%s\n", &choose)
@@ -114,6 +116,17 @@ func PrintUiClientMainMenu() {
 		notImplemented()
 	case "5":
 		notImplemented()
+	case "6":
+		pkg.CallClear()
+
+		data, err := json.Marshal(ui.Client)
+		if err != nil {
+			panic(err)
+		}
+
+		fmt.Println(string(data))
+		fmt.Println("Нажмте Enter чтобы вернуться")
+		fmt.Scanf("%s\n")
 	default:
 	}
 }
