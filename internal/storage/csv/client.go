@@ -47,6 +47,9 @@ func (c *ClientStorage) FindById(id string) domain.Client {
 				LastName: record[2],
 				Accounts: accounts,
 			}
+			// Если нашли клиента, то дальше можно уже не смотреть
+			// Оптимизации :)
+			break
 		}
 	}
 

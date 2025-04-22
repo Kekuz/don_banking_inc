@@ -2,6 +2,7 @@ package csv
 
 import (
 	"encoding/csv"
+	"io"
 	"log"
 	"os"
 	"strconv"
@@ -18,17 +19,24 @@ func (a *AccountStorage) FindById(id string) []domain.Account {
 	}
 	defer f.Close()
 
-	csvReader := csv.NewReader(f)
-	records, err := csvReader.ReadAll()
-	if err != nil {
-		log.Fatal("Unable to parse file as CSV for "+filePath, err)
-	}
+	reader := csv.NewReader(f)
+	reader.FieldsPerRecord = -1
 
 	var accounts []domain.Account
 
-	for _, v := range records {
-		if v[0] == id {
-			accounts = append(accounts, createAccount(v[3], v[4]))
+	for {
+		record, err := reader.Read()
+
+		if err == io.EOF {
+			break
+		}
+
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		if record[0] == id {
+			accounts = append(accounts, createAccount(record[3], record[4]))
 		}
 	}
 
