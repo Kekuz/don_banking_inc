@@ -9,11 +9,9 @@ import (
 	"github.com/Kekuz/don_banking_inc/internal/domain"
 )
 
-const filePath = "./input.csv"
-
 type AccountStorage struct{}
 
-func (c *AccountStorage) FindById(id string) []domain.Account {
+func (a *AccountStorage) FindById(id string) []domain.Account {
 	f, err := os.Open(filePath)
 	if err != nil {
 		log.Fatal("Unable to read input file "+filePath, err)

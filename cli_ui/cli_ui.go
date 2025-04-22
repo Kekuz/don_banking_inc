@@ -17,10 +17,12 @@ type uiState struct {
 
 var ui uiState
 var accountHandler *cli.AccountHandler
+var clientHandler *cli.ClientHandler
 
 func init() {
 	ui = uiState{}
 	accountHandler = cli.NewAccountHandler(&csv.AccountStorage{})
+	clientHandler = cli.NewClientHandler(&csv.ClientStorage{})
 }
 
 func Run() {
@@ -43,16 +45,17 @@ func InsertClientId() {
 	fmt.Println("Введите номер клиента:")
 	fmt.Scanf("%s\n", &id)
 
-	intId, err := strconv.Atoi(id)
-	if err != nil {
-		panic(err)
-	}
+	client := clientHandler.GetClientById(id)
 
-	ui.ClientId = intId
+	ui = uiState{
+		Client: client,
+	}
 }
 
 func PrintUiState() {
 	fmt.Printf("Номер клиента: %s\n", strconv.Itoa(ui.ClientId))
+	fmt.Printf("Имя: %s\n", ui.FirstName)
+	fmt.Printf("Фамилия: %s\n", ui.LastName)
 
 	if  ui.currentAccount != domain.UNKNOWN {
 		fmt.Printf("Валюта счета: %s\n", ui.currentAccount)
