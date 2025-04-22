@@ -25,7 +25,7 @@ func (c Currency) String() string {
 	}
 }
 
-func ToCurrency(s string) Currency{
+func ToCurrency(s string) Currency {
 	switch s {
 	case "RUB":
 		return RUB

@@ -3,6 +3,7 @@ package cliui
 import (
 	"fmt"
 	"strconv"
+	"strings"
 
 	"github.com/Kekuz/don_banking_inc/internal/domain"
 	"github.com/Kekuz/don_banking_inc/internal/storage/csv"
@@ -57,10 +58,17 @@ func PrintUiState() {
 	fmt.Printf("Имя: %s\n", ui.FirstName)
 	fmt.Printf("Фамилия: %s\n", ui.LastName)
 
-	if  ui.currentAccount != domain.UNKNOWN {
-		fmt.Printf("Валюта счета: %s\n", ui.currentAccount)
+	// TODO: возможно тут стоит реализовать более изящное решение
+	var accounts []string
+	for _, v := range ui.Accounts {
+		accounts = append(accounts, v.Currency.String())
 	}
-	
+	fmt.Printf("Доступные счета: %s\n", strings.Join(accounts, ", "))
+
+	if ui.currentAccount != domain.UNKNOWN {
+		fmt.Printf("Выбранная валюта счета: %s\n", ui.currentAccount)
+	}
+
 	fmt.Println()
 }
 
@@ -98,7 +106,7 @@ func PrintUiClientMainMenu() {
 			panic(err)
 		}
 
-		ui.currentAccount = accounts[i - 1].Currency
+		ui.currentAccount = accounts[i-1].Currency
 
 	case "3":
 		notImplemented()

@@ -10,7 +10,9 @@ import (
 	"github.com/Kekuz/don_banking_inc/internal/domain"
 )
 
-type ClientStorage struct{}
+type ClientStorage struct{
+	AccountStorage
+}
 
 func (c *ClientStorage) FindById(id string) domain.Client {
 	f, err := os.Open(filePath)
@@ -37,15 +39,13 @@ func (c *ClientStorage) FindById(id string) domain.Client {
 
 		if(record[0] == id){
 			strId,_ := strconv.Atoi(id)
-			floatBalance, _ := strconv.ParseFloat(record[4], 64)
+			accounts := c.AccountStorage.FindById(id)
+
 			client = domain.Client{
 				ClientId: strId,
 				FirstName: record[1],
 				LastName: record[2],
-				Accounts: []domain.Account{{
-					Currency: domain.ToCurrency(record[3]),
-					Balance: floatBalance,
-				}},
+				Accounts: accounts,
 			}
 		}
 	}
