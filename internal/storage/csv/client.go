@@ -14,7 +14,7 @@ type ClientStorage struct{
 	AccountStorage
 }
 
-func (c *ClientStorage) FindById(id string) domain.Client {
+func (c *ClientStorage) FindById(id int) domain.Client {
 	f, err := os.Open(filePath)
 	if err != nil {
 		log.Fatal("Unable to read input file "+filePath, err)
@@ -37,12 +37,11 @@ func (c *ClientStorage) FindById(id string) domain.Client {
 			log.Fatal(err)
 		}
 
-		if(record[0] == id){
-			strId,_ := strconv.Atoi(id)
+		if(record[0] == strconv.Itoa(id)){
 			accounts := c.AccountStorage.FindById(id)
 
 			client = domain.Client{
-				ClientId: strId,
+				ClientId: id,
 				FirstName: record[1],
 				LastName: record[2],
 				Accounts: accounts,
@@ -54,5 +53,4 @@ func (c *ClientStorage) FindById(id string) domain.Client {
 	}
 
 	return client
-
 }

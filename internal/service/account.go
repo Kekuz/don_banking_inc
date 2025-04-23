@@ -5,5 +5,8 @@ import (
 )
 
 type AccountStorage interface {
-	FindById(string) []domain.Account
+	FindById(id int) []domain.Account
+	WriteAccount(client domain.Client, currency domain.Currency)
+	DeleteAccount(id int, currency domain.Currency)
+	UpdateAccountBalance(id int, currency domain.Currency)
 }

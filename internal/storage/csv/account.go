@@ -12,7 +12,7 @@ import (
 
 type AccountStorage struct{}
 
-func (a *AccountStorage) FindById(id string) []domain.Account {
+func (a *AccountStorage) FindById(id int) []domain.Account {
 	f, err := os.Open(filePath)
 	if err != nil {
 		log.Fatal("Unable to read input file "+filePath, err)
@@ -35,16 +35,16 @@ func (a *AccountStorage) FindById(id string) []domain.Account {
 			log.Fatal(err)
 		}
 
-		if record[0] == id {
-			accounts = append(accounts, createAccount(record[3], record[4]))
+		if record[0] == strconv.Itoa(id) {
+			accounts = append(accounts, createAccountModel(record[3], record[4]))
 		}
 	}
 
 	return accounts
 }
 
-func createAccount(currency string, balance string) domain.Account {
-	
+func createAccountModel(currency string, balance string) domain.Account {
+
 	floatBalance, _ := strconv.ParseFloat(balance, 64)
 	a := domain.Account{
 		Currency: domain.ToCurrency(currency),
@@ -52,4 +52,29 @@ func createAccount(currency string, balance string) domain.Account {
 	}
 
 	return a
+}
+
+func (a *AccountStorage) WriteAccount(client domain.Client, currency domain.Currency) {
+	f, err := os.OpenFile(filePath, os.O_WRONLY|os.O_APPEND, os.ModeAppend.Perm())
+	if err != nil {
+		log.Fatal("Unable to read input file "+filePath, err)
+	}
+	defer f.Close()
+
+	w := csv.NewWriter(f)
+
+	data := [][]string{{strconv.Itoa(client.ClientId), client.FirstName, client.LastName, currency.StringAcronym(), "0.0"}}
+
+	w.WriteAll(data)
+	if err := w.Error(); err != nil {
+		log.Fatal(err)
+	}
+}
+
+func (a *AccountStorage) DeleteAccount(id int, currency domain.Currency) {
+	panic("todo")
+}
+
+func (a *AccountStorage) UpdateAccountBalance(id int, currency domain.Currency) {
+	panic("todo")
 }

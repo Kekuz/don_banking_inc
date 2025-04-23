@@ -47,7 +47,13 @@ func InsertClientId() {
 	fmt.Println("Введите номер клиента:")
 	fmt.Scanf("%s\n", &id)
 
-	client := clientHandler.GetClientById(id)
+	strId, err := strconv.Atoi(id)
+
+	if err != nil {
+		panic(err)
+	}
+
+	client := clientHandler.GetClientById(strId)
 
 	ui = uiState{
 		Client: client,
@@ -74,42 +80,21 @@ func PrintUiState() {
 }
 
 func PrintUiClientMainMenu() {
-	fmt.Println("1. Создать счет (Не реализовано)")
+	fmt.Println("1. Создать счет")
 	fmt.Println("2. Выбрать счет")
 	fmt.Println("3. Положить деньги на счет (Не реализовано)")
 	fmt.Println("4. Снять деньги со счета (Не реализовано)")
 	fmt.Println("5. Удалить счет (Не реализовано)")
 	fmt.Println("6. Вывести сериализованные данные о клиенте")
 
-	var choose string
-	fmt.Scanf("%s\n", &choose)
+	var choice string
+	fmt.Scanf("%s\n", &choice)
 
-	switch choose {
-
+	switch choice {
 	case "1":
-		notImplemented()
+		createAccountScreen()
 	case "2":
-		pkg.CallClear()
-
-		fmt.Println("Выберите интересующмий счет:")
-		fmt.Println()
-
-		accounts := accountHandler.GetAccountsById(strconv.Itoa(ui.ClientId))
-
-		for i, account := range accounts {
-			fmt.Printf("%d. %s - %f\n", i+1, account.Currency, account.Balance)
-		}
-
-		var choose string
-		fmt.Scanf("%s\n", &choose)
-
-		i, err := strconv.Atoi(choose)
-		if err != nil {
-			panic(err)
-		}
-
-		ui.currentAccount = accounts[i-1].Currency
-
+		pickAccountScreen()
 	case "3":
 		notImplemented()
 	case "4":
@@ -117,22 +102,59 @@ func PrintUiClientMainMenu() {
 	case "5":
 		notImplemented()
 	case "6":
-		pkg.CallClear()
-
-		data, err := json.Marshal(ui.Client)
-		if err != nil {
-			panic(err)
-		}
-
-		fmt.Println(string(data))
-		fmt.Println("Нажмте Enter чтобы вернуться")
-		fmt.Scanf("%s\n")
+		printClientJSON()
 	default:
 	}
 }
 
+func createAccountScreen() {
+	pkg.CallClear()
+
+	fmt.Println("Напишите валюту счета: ")
+	var currency string
+	fmt.Scanf("%s\n", &currency)
+	accountHandler.CreateNewAccount(ui.Client, domain.ToCurrency(currency))
+}
+
+func pickAccountScreen() {
+	pkg.CallClear()
+
+	fmt.Println("Выберите интересующмий счет:")
+	fmt.Println()
+
+	accounts := accountHandler.GetAccountsById(ui.ClientId)
+
+	for i, account := range accounts {
+		fmt.Printf("%d. %s - %f\n", i+1, account.Currency, account.Balance)
+	}
+
+	var choose string
+	fmt.Scanf("%s\n", &choose)
+
+	i, err := strconv.Atoi(choose)
+	if err != nil {
+		panic(err)
+	}
+
+	ui.currentAccount = accounts[i-1].Currency
+}
+
+func printClientJSON() {
+	pkg.CallClear()
+
+	data, err := json.Marshal(ui.Client)
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println(string(data))
+	fmt.Println("Нажмте Enter чтобы вернуться")
+	fmt.Scanf("%s\n")
+}
+
 func notImplemented() {
 	pkg.CallClear()
+
 	fmt.Println("Не реализовано :(")
 	fmt.Println("Нажмте Enter чтобы вернуться")
 	fmt.Scanf("%s\n")

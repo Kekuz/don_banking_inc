@@ -5,5 +5,5 @@ import (
 )
 
 type ClientStorage interface {
-	FindById(string) domain.Client
+	FindById(int) domain.Client
 }
