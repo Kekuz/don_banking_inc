@@ -8,6 +8,7 @@ import (
 
 	"github.com/Kekuz/don_banking_inc/internal/domain"
 	"github.com/Kekuz/don_banking_inc/internal/storage/csv"
+	"github.com/Kekuz/don_banking_inc/internal/service"
 	"github.com/Kekuz/don_banking_inc/internal/transport/cli"
 	"github.com/Kekuz/don_banking_inc/pkg"
 )
@@ -23,7 +24,13 @@ var clientHandler *cli.ClientHandler
 
 func init() {
 	ui = uiState{}
-	accountHandler = cli.NewAccountHandler(&csv.AccountStorage{})
+	var accountStorage service.AccountStorage = &csv.AccountStorage{}
+
+	var accountService cli.AccountService = &service.AccountService{
+		Storage: accountStorage,
+	}
+	
+	accountHandler = cli.NewAccountHandler(accountService)
 	clientHandler = cli.NewClientHandler(&csv.ClientStorage{})
 }
 
@@ -60,6 +67,14 @@ func InsertClientId() {
 	}
 }
 
+func updateUi() {
+	client := clientHandler.GetClientById(ui.ClientId)
+
+	ui = uiState{
+		Client: client,
+	}
+}
+
 func PrintUiState() {
 	fmt.Printf("Номер клиента: %s\n", strconv.Itoa(ui.ClientId))
 	fmt.Printf("Имя: %s\n", ui.FirstName)
@@ -82,7 +97,7 @@ func PrintUiState() {
 func PrintUiClientMainMenu() {
 	fmt.Println("1. Создать счет")
 	fmt.Println("2. Выбрать счет")
-	fmt.Println("3. Положить деньги на счет (Не реализовано)")
+	fmt.Println("3. Положить деньги на счет")
 	fmt.Println("4. Снять деньги со счета (Не реализовано)")
 	fmt.Println("5. Удалить счет (Не реализовано)")
 	fmt.Println("6. Вывести сериализованные данные о клиенте")
@@ -93,10 +108,11 @@ func PrintUiClientMainMenu() {
 	switch choice {
 	case "1":
 		createAccountScreen()
+		updateUi()
 	case "2":
 		pickAccountScreen()
 	case "3":
-		notImplemented()
+		putMoneyIntoAccountScreen()
 	case "4":
 		notImplemented()
 	case "5":
@@ -137,6 +153,23 @@ func pickAccountScreen() {
 	}
 
 	ui.currentAccount = accounts[i-1].Currency
+}
+
+func putMoneyIntoAccountScreen() {
+	pkg.CallClear()
+
+	fmt.Println("Введите сумму, которую необходимо внести:")
+	fmt.Println()
+
+	var inputSum string
+	fmt.Scanf("%s\n", &inputSum)
+
+	floatSum, err := strconv.ParseFloat(inputSum, 64)
+	if err != nil {
+		panic(err)
+	}
+
+	accountHandler.PutMoneyIntoAccountBalance(ui.ClientId, ui.currentAccount, floatSum)
 }
 
 func printClientJSON() {

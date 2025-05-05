@@ -75,6 +75,6 @@ func (a *AccountStorage) DeleteAccount(id int, currency domain.Currency) {
 	panic("todo")
 }
 
-func (a *AccountStorage) UpdateAccountBalance(id int, currency domain.Currency) {
+func (a *AccountStorage) UpdateAccountBalance(id int, currency domain.Currency, moneyAmount float64) {
 	panic("todo")
 }
