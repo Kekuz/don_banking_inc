@@ -5,5 +5,13 @@ import (
 )
 
 type ClientStorage interface {
-	FindById(int) domain.Client
+	FindById(id int) domain.Client
+}
+
+type ClientService struct {
+	Storage ClientStorage
+}
+
+func (s *ClientService) FindById(id int) domain.Client{
+	return s.Storage.FindById(id)
 }

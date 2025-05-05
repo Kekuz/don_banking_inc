@@ -24,6 +24,8 @@ var clientHandler *cli.ClientHandler
 
 func init() {
 	ui = uiState{}
+
+	// Наглядно правильно инжектим зависимости вручную
 	var accountStorage service.AccountStorage = &csv.AccountStorage{}
 
 	var accountService cli.AccountService = &service.AccountService{
@@ -31,7 +33,14 @@ func init() {
 	}
 	
 	accountHandler = cli.NewAccountHandler(accountService)
-	clientHandler = cli.NewClientHandler(&csv.ClientStorage{})
+
+	var clientStorage service.ClientStorage = &csv.ClientStorage{}
+
+	var clientService cli.ClientService = &service.ClientService{
+		Storage: clientStorage,
+	}
+
+	clientHandler = cli.NewClientHandler(clientService)
 }
 
 func Run() {
@@ -67,13 +76,13 @@ func InsertClientId() {
 	}
 }
 
-func updateUi() {
+/* func updateUi() {
 	client := clientHandler.GetClientById(ui.ClientId)
 
 	ui = uiState{
 		Client: client,
 	}
-}
+} */
 
 func PrintUiState() {
 	fmt.Printf("Номер клиента: %s\n", strconv.Itoa(ui.ClientId))
@@ -108,7 +117,6 @@ func PrintUiClientMainMenu() {
 	switch choice {
 	case "1":
 		createAccountScreen()
-		updateUi()
 	case "2":
 		pickAccountScreen()
 	case "3":

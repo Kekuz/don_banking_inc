@@ -7,14 +7,14 @@ type ClientService interface {
 }
 
 type ClientHandler struct {
-	service ClientService
+	Service ClientService
 }
 
 func NewClientHandler(s ClientService) *ClientHandler {
-	return &ClientHandler{service: s}
+	return &ClientHandler{Service: s}
 }
 
 func (h *ClientHandler) GetClientById(id int) domain.Client{
-	client := h.service.FindById(id)
+	client := h.Service.FindById(id)
 	return client
 }
