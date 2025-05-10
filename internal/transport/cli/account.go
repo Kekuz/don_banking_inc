@@ -34,3 +34,7 @@ func (h *AccountHandler) PutMoneyIntoAccountBalance(id int, currency domain.Curr
 func (h *AccountHandler) DebitMoneyFromAccountBalance(id int, currency domain.Currency, moneyAmount float64) {
 	h.service.DebitMoneyFromAccountBalance(id, currency, moneyAmount)
 }
+
+func (h *AccountHandler) DeleteAccount(id int, currency domain.Currency) {
+	h.service.DeleteAccount(id, currency)
+}

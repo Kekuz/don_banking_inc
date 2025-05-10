@@ -7,8 +7,8 @@ import (
 	"strings"
 
 	"github.com/Kekuz/don_banking_inc/internal/domain"
-	"github.com/Kekuz/don_banking_inc/internal/storage/csv"
 	"github.com/Kekuz/don_banking_inc/internal/service"
+	"github.com/Kekuz/don_banking_inc/internal/storage/csv"
 	"github.com/Kekuz/don_banking_inc/internal/transport/cli"
 	"github.com/Kekuz/don_banking_inc/pkg"
 )
@@ -31,7 +31,7 @@ func init() {
 	var accountService cli.AccountService = &service.AccountService{
 		Storage: accountStorage,
 	}
-	
+
 	accountHandler = cli.NewAccountHandler(accountService)
 
 	var clientStorage service.ClientStorage = &csv.ClientStorage{}
@@ -106,9 +106,9 @@ func PrintUiState() {
 func PrintUiClientMainMenu() {
 	fmt.Println("1. Создать счет")
 	fmt.Println("2. Выбрать счет")
-	fmt.Println("3. Положить деньги на счет")
+	fmt.Println("3. Положить деньги на счет (Не реализовано)")
 	fmt.Println("4. Снять деньги со счета (Не реализовано)")
-	fmt.Println("5. Удалить счет (Не реализовано)")
+	fmt.Println("5. Удалить счет")
 	fmt.Println("6. Вывести сериализованные данные о клиенте")
 
 	var choice string
@@ -124,7 +124,7 @@ func PrintUiClientMainMenu() {
 	case "4":
 		notImplemented()
 	case "5":
-		notImplemented()
+		deleteAccountScreen()
 	case "6":
 		printClientJSON()
 	default:
@@ -189,6 +189,17 @@ func printClientJSON() {
 	}
 
 	fmt.Println(string(data))
+	fmt.Println("Нажмте Enter чтобы вернуться")
+	fmt.Scanf("%s\n")
+}
+
+func deleteAccountScreen() {
+	pkg.CallClear()
+
+	accountHandler.DeleteAccount(ui.ClientId, ui.currentAccount)
+
+	//TODO сделать обработку ошибок
+	fmt.Println("Счет удален")
 	fmt.Println("Нажмте Enter чтобы вернуться")
 	fmt.Scanf("%s\n")
 }

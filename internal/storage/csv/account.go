@@ -72,7 +72,51 @@ func (a *AccountStorage) WriteAccount(client domain.Client, currency domain.Curr
 }
 
 func (a *AccountStorage) DeleteAccount(id int, currency domain.Currency) {
-	panic("todo")
+	oldFile, err := os.OpenFile(filePath, os.O_RDONLY, os.ModeAppend.Perm())
+	if err != nil {
+		log.Fatal("Unable to read input file "+filePath, err)
+	}
+
+	oldFileReader := csv.NewReader(oldFile)
+	oldFileReader.FieldsPerRecord = -1
+
+	// Write the CSV data
+	newFile, err := os.Create(tempFileName)
+	if err != nil {
+		panic(err)
+	}
+
+	newFileWriter := csv.NewWriter(newFile)
+
+	for {
+		record, err := oldFileReader.Read()
+
+		if err == io.EOF {
+			break
+		}
+
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		if record[0] != strconv.Itoa(id) || record[3] != currency.StringAcronym() { 
+			newFileWriter.Write(record)
+		}
+	}
+
+	oldFile.Close()
+	removeError := os.Remove(fileName)
+	if removeError != nil {
+		log.Fatal(removeError)
+	} 
+
+	// Вызываем Flush чтобы гарантировать, что все буферизованные данные записаны в ваш файл перед закрытием
+	newFileWriter.Flush()
+	newFile.Close()
+	renameError := os.Rename(tempFileName, fileName)
+	if renameError != nil {
+		log.Fatal(renameError)
+	}
 }
 
 func (a *AccountStorage) UpdateAccountBalance(id int, currency domain.Currency, moneyAmount float64) {
