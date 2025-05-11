@@ -6,8 +6,8 @@ type AccountService interface {
 	FindById(id int) []domain.Account
 	WriteAccount(client domain.Client, currency domain.Currency)
 	DeleteAccount(id int, currency domain.Currency)
-	PutMoneyIntoAccountBalance(id int, currency domain.Currency, moneyAmount float64)
-	DebitMoneyFromAccountBalance(id int, currency domain.Currency, moneyAmount float64)
+	PutMoneyIntoAccountBalance(client domain.Client, currency domain.Currency, moneyAmount float64)
+	DebitMoneyFromAccountBalance(client domain.Client, currency domain.Currency, moneyAmount float64)
 }
 
 type AccountHandler struct {
@@ -27,12 +27,12 @@ func (h *AccountHandler) CreateNewAccount(client domain.Client, currency domain.
 	h.service.WriteAccount(client, currency)
 }
 
-func (h *AccountHandler) PutMoneyIntoAccountBalance(id int, currency domain.Currency, moneyAmount float64) {
-	h.service.PutMoneyIntoAccountBalance(id, currency, moneyAmount)
+func (h *AccountHandler) PutMoneyIntoAccountBalance(client domain.Client, currency domain.Currency, moneyAmount float64) {
+	h.service.PutMoneyIntoAccountBalance(client, currency, moneyAmount)
 }
 
-func (h *AccountHandler) DebitMoneyFromAccountBalance(id int, currency domain.Currency, moneyAmount float64) {
-	h.service.DebitMoneyFromAccountBalance(id, currency, moneyAmount)
+func (h *AccountHandler) DebitMoneyFromAccountBalance(client domain.Client, currency domain.Currency, moneyAmount float64) {
+	h.service.DebitMoneyFromAccountBalance(client, currency, moneyAmount)
 }
 
 func (h *AccountHandler) DeleteAccount(id int, currency domain.Currency) {

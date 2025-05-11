@@ -106,8 +106,8 @@ func PrintUiState() {
 func PrintUiClientMainMenu() {
 	fmt.Println("1. Создать счет")
 	fmt.Println("2. Выбрать счет")
-	fmt.Println("3. Положить деньги на счет (Не реализовано)")
-	fmt.Println("4. Снять деньги со счета (Не реализовано)")
+	fmt.Println("3. Положить деньги на счет")
+	fmt.Println("4. Снять деньги со счета")
 	fmt.Println("5. Удалить счет")
 	fmt.Println("6. Вывести сериализованные данные о клиенте")
 
@@ -122,7 +122,7 @@ func PrintUiClientMainMenu() {
 	case "3":
 		putMoneyIntoAccountScreen()
 	case "4":
-		notImplemented()
+		debitMoneyIntoAccountScreen()
 	case "5":
 		deleteAccountScreen()
 	case "6":
@@ -177,7 +177,30 @@ func putMoneyIntoAccountScreen() {
 		panic(err)
 	}
 
-	accountHandler.PutMoneyIntoAccountBalance(ui.ClientId, ui.currentAccount, floatSum)
+	accountHandler.PutMoneyIntoAccountBalance(ui.Client, ui.currentAccount, floatSum)
+
+	fmt.Println("Нажмте Enter чтобы вернуться")
+	fmt.Scanf("%s\n")
+}
+
+func debitMoneyIntoAccountScreen() {
+	pkg.CallClear()
+
+	fmt.Println("Введите сумму, которую необходимо снять:")
+	fmt.Println()
+
+	var inputSum string
+	fmt.Scanf("%s\n", &inputSum)
+
+	floatSum, err := strconv.ParseFloat(inputSum, 64)
+	if err != nil {
+		panic(err)
+	}
+
+	accountHandler.DebitMoneyFromAccountBalance(ui.Client, ui.currentAccount, floatSum)
+	
+	fmt.Println("Нажмте Enter чтобы вернуться")
+	fmt.Scanf("%s\n")
 }
 
 func printClientJSON() {
