@@ -6,6 +6,7 @@ const (
 	IncorrectClientId ErrorType = iota
 	NoClientWithThatId
 	NoAccountsWithThatId
+	WrongInputValue
 )
 
 func (i ErrorType) String() string {
@@ -16,6 +17,8 @@ func (i ErrorType) String() string {
 		return "Нет клиента с таким ID"
 	case NoAccountsWithThatId:
 		return "Нет счета с таким ID"
+	case WrongInputValue:
+		return "Вы ввели неверное значение"
 	default:
 		return "Неизвестная ошибка"
 	}

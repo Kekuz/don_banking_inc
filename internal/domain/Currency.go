@@ -10,18 +10,20 @@ const (
 	GBP
 )
 
+var CurrencyName = map[Currency]string{
+	UNKNOWN: "Неверное значение",
+	RUB:     "Рубли",
+	EUR:     "Евро",
+	USD:     "Доллары",
+	GBP:     "Фунты",
+}
+
 func (c Currency) String() string {
-	switch c {
-	case RUB:
-		return "Рубли"
-	case EUR:
-		return "Евро"
-	case USD:
-		return "Доллары"
-	case GBP:
-		return "Фунты"
-	default:
-		return "Неверное значение"
+	s, isExist := CurrencyName[c]
+	if isExist {
+		return s
+	} else {
+		return CurrencyName[UNKNOWN]
 	}
 }
 
