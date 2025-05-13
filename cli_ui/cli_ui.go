@@ -62,11 +62,6 @@ func Run() {
 	for {
 		pkg.CallClear()
 		pkg.PrintHeader()
-		//TODO
-		/* err := updateUi()
-		if err != nil {
-			panic(err)
-		} */
 		PrintUiState()
 
 		PrintUiClientMainMenu()
@@ -101,30 +96,29 @@ func InsertClientId() error {
 	return nil
 }
 
-func updateUi() error {
-	client, err := clientHandler.GetClientById(ui.ClientId)
-
-	if err != nil {
-		return err
-	}
-
-	ui = uiState{
-		Client: client,
-	}
-	return nil
-}
-
 func PrintUiState() {
 	fmt.Printf("Номер клиента: %s\n", strconv.Itoa(ui.ClientId))
 	fmt.Printf("Имя: %s\n", ui.FirstName)
 	fmt.Printf("Фамилия: %s\n", ui.LastName)
 
-	// TODO: возможно тут стоит реализовать более изящное решение
-	var accounts []string
-	for _, v := range ui.Accounts {
-		accounts = append(accounts, v.Currency.String())
+	var accounts, err = accountHandler.GetAccountsById(ui.ClientId)
+	if err != nil {
+		appError, ok := err.(*apperror.AppError)
+		if ok {
+			fmt.Println(appError.ErrorType.String())
+		} else {
+			fmt.Println(err.Error())
+		}
+		fmt.Println("Нажмте Enter чтобы вернуться")
+		fmt.Scanf("%s\n")
+		return
 	}
-	fmt.Printf("Доступные счета: %s\n", strings.Join(accounts, ", "))
+
+	currencies := make([]string, len(accounts))
+	for i := range accounts {
+		currencies[i] = accounts[i].Currency.String()
+	}
+	fmt.Printf("Доступные счета: %s\n", strings.Join(currencies, ", "))
 
 	if ui.currentAccount != domain.UNKNOWN {
 		fmt.Printf("Выбранная валюта счета: %s\n", ui.currentAccount)
@@ -182,9 +176,13 @@ func pickAccountScreen() {
 	var input string
 
 	accounts, err := accountHandler.GetAccountsById(ui.ClientId)
-	appError, ok := err.(*apperror.AppError)
-	if ok {
-		fmt.Println(appError.ErrorType.String())
+	if err != nil {
+		appError, ok := err.(*apperror.AppError)
+		if ok {
+			fmt.Println(appError.ErrorType.String())
+		} else {
+			fmt.Println(err.Error())
+		}
 		fmt.Println("Нажмте Enter чтобы вернуться")
 		fmt.Scanf("%s\n")
 		return
@@ -283,14 +281,6 @@ func deleteAccountScreen() {
 
 	//TODO сделать обработку ошибок
 	fmt.Println("Счет удален")
-	fmt.Println("Нажмте Enter чтобы вернуться")
-	fmt.Scanf("%s\n")
-}
-
-func notImplemented() {
-	pkg.CallClear()
-
-	fmt.Println("Не реализовано :(")
 	fmt.Println("Нажмте Enter чтобы вернуться")
 	fmt.Scanf("%s\n")
 }

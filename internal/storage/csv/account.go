@@ -96,6 +96,7 @@ func (a *AccountStorage) DeleteAccount(id int, currency domain.Currency) error {
 	if err != nil {
 		return err
 	}
+	defer oldFile.Close()
 
 	oldFileReader := csv.NewReader(oldFile)
 	oldFileReader.FieldsPerRecord = -1
@@ -105,6 +106,7 @@ func (a *AccountStorage) DeleteAccount(id int, currency domain.Currency) error {
 	if err != nil {
 		return err
 	}
+	defer newFile.Close()
 
 	newFileWriter := csv.NewWriter(newFile)
 
@@ -120,9 +122,9 @@ func (a *AccountStorage) DeleteAccount(id int, currency domain.Currency) error {
 		}
 
 		if record[0] != strconv.Itoa(id) || record[3] != currency.StringAcronym() {
-			err := newFileWriter.Write(record)
-
-			return err
+			if err := newFileWriter.Write(record); err != nil {
+				return err
+			}
 		}
 	}
 
@@ -147,6 +149,7 @@ func (a *AccountStorage) UpdateAccountBalance(client domain.Client, currency dom
 	if err != nil {
 		return err
 	}
+	defer oldFile.Close()
 
 	oldFileReader := csv.NewReader(oldFile)
 	oldFileReader.FieldsPerRecord = -1
@@ -156,6 +159,7 @@ func (a *AccountStorage) UpdateAccountBalance(client domain.Client, currency dom
 	if err != nil {
 		return err
 	}
+	defer newFile.Close()
 
 	newFileWriter := csv.NewWriter(newFile)
 
@@ -172,7 +176,9 @@ func (a *AccountStorage) UpdateAccountBalance(client domain.Client, currency dom
 
 		if record[0] != strconv.Itoa(client.ClientId) || record[3] != currency.StringAcronym() {
 			err := newFileWriter.Write(record)
-			return err
+			if err != nil {
+				return err
+			}
 		} else {
 			floatOldBalance, err := strconv.ParseFloat(record[4], 64)
 			if err != nil {
