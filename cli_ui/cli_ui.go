@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/Kekuz/don_banking_inc/internal/domain"
+	"github.com/Kekuz/don_banking_inc/internal/error"
 	"github.com/Kekuz/don_banking_inc/internal/service"
 	"github.com/Kekuz/don_banking_inc/internal/storage/csv"
 	"github.com/Kekuz/don_banking_inc/internal/transport/cli"
@@ -25,7 +26,7 @@ var clientHandler *cli.ClientHandler
 func init() {
 	ui = uiState{}
 
-	// Наглядно правильно инжектим зависимости вручную
+	// Наглядно, правильно инжектим зависимости вручную
 	var accountStorage service.AccountStorage = &csv.AccountStorage{}
 
 	var accountService cli.AccountService = &service.AccountService{
@@ -47,7 +48,16 @@ func Run() {
 	pkg.CallClear()
 	pkg.PrintHeader()
 
-	InsertClientId()
+	err := InsertClientId()
+	for err != nil {
+		pkg.CallClear()
+		pkg.PrintHeader()
+		appError, ok := err.(*apperror.AppError)
+		if ok {
+			fmt.Println(appError.ErrorType.String())
+		}
+		err = InsertClientId()
+	}
 
 	for {
 		pkg.CallClear()
@@ -58,7 +68,7 @@ func Run() {
 	}
 }
 
-func InsertClientId() {
+func InsertClientId() error {
 	var id string
 	fmt.Println("Введите номер клиента:")
 	fmt.Scanf("%s\n", &id)
@@ -66,14 +76,24 @@ func InsertClientId() {
 	strId, err := strconv.Atoi(id)
 
 	if err != nil {
-		panic(err)
+		return apperror.New(
+			err,
+			apperror.IncorrectClientId,
+			"Неверный номер клиента: "+fmt.Sprintf("%v", strId),
+			"cliui.InsertClientId",
+		)
 	}
 
-	client := clientHandler.GetClientById(strId)
+	client, err := clientHandler.GetClientById(strId)
+
+	if err != nil {
+		return err
+	}
 
 	ui = uiState{
 		Client: client,
 	}
+	return nil
 }
 
 /* func updateUi() {
@@ -137,7 +157,11 @@ func createAccountScreen() {
 	fmt.Println("Напишите валюту счета: ")
 	var currency string
 	fmt.Scanf("%s\n", &currency)
-	accountHandler.CreateNewAccount(ui.Client, domain.ToCurrency(currency))
+	err := accountHandler.CreateNewAccount(ui.Client, domain.ToCurrency(currency))
+
+	if err != nil {
+		panic(err)
+	}
 }
 
 func pickAccountScreen() {
@@ -146,7 +170,10 @@ func pickAccountScreen() {
 	fmt.Println("Выберите интересующмий счет:")
 	fmt.Println()
 
-	accounts := accountHandler.GetAccountsById(ui.ClientId)
+	accounts, err := accountHandler.GetAccountsById(ui.ClientId)
+	if err != nil {
+		panic(err)
+	}
 
 	for i, account := range accounts {
 		fmt.Printf("%d. %s - %f\n", i+1, account.Currency, account.Balance)
@@ -177,7 +204,10 @@ func putMoneyIntoAccountScreen() {
 		panic(err)
 	}
 
-	accountHandler.PutMoneyIntoAccountBalance(ui.Client, ui.currentAccount, floatSum)
+	err = accountHandler.PutMoneyIntoAccountBalance(ui.Client, ui.currentAccount, floatSum)
+	if err != nil {
+		panic(err)
+	}
 
 	fmt.Println("Нажмте Enter чтобы вернуться")
 	fmt.Scanf("%s\n")
@@ -197,8 +227,11 @@ func debitMoneyIntoAccountScreen() {
 		panic(err)
 	}
 
-	accountHandler.DebitMoneyFromAccountBalance(ui.Client, ui.currentAccount, floatSum)
-	
+	err = accountHandler.DebitMoneyFromAccountBalance(ui.Client, ui.currentAccount, floatSum)
+	if err != nil {
+		panic(err)
+	}
+
 	fmt.Println("Нажмте Enter чтобы вернуться")
 	fmt.Scanf("%s\n")
 }
@@ -219,7 +252,10 @@ func printClientJSON() {
 func deleteAccountScreen() {
 	pkg.CallClear()
 
-	accountHandler.DeleteAccount(ui.ClientId, ui.currentAccount)
+	err := accountHandler.DeleteAccount(ui.ClientId, ui.currentAccount)
+	if err != nil {
+		panic(err)
+	}
 
 	//TODO сделать обработку ошибок
 	fmt.Println("Счет удален")

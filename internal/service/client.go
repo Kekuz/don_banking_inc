@@ -5,13 +5,13 @@ import (
 )
 
 type ClientStorage interface {
-	FindById(id int) domain.Client
+	FindById(id int) (domain.Client, error)
 }
 
 type ClientService struct {
 	Storage ClientStorage
 }
 
-func (s *ClientService) FindById(id int) domain.Client{
+func (s *ClientService) FindById(id int) (domain.Client, error){
 	return s.Storage.FindById(id)
 }

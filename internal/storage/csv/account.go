@@ -4,7 +4,6 @@ import (
 	"encoding/csv"
 	"fmt"
 	"io"
-	"log"
 	"os"
 	"strconv"
 
@@ -13,10 +12,10 @@ import (
 
 type AccountStorage struct{}
 
-func (a *AccountStorage) FindById(id int) []domain.Account {
+func (a *AccountStorage) FindById(id int) ([]domain.Account, error) {
 	f, err := os.Open(filePath)
 	if err != nil {
-		log.Fatal("Unable to read input file "+filePath, err)
+		return nil, err
 	}
 	defer f.Close()
 
@@ -33,32 +32,42 @@ func (a *AccountStorage) FindById(id int) []domain.Account {
 		}
 
 		if err != nil {
-			log.Fatal(err)
+			return nil, err
 		}
 
 		if record[0] == strconv.Itoa(id) {
-			accounts = append(accounts, createAccountModel(record[3], record[4]))
+			account, err := createAccountModel(record[3], record[4])
+			if err != nil {
+				return nil, err
+			}
+
+			accounts = append(accounts, account)
 		}
 	}
 
-	return accounts
+	return accounts, nil
 }
 
-func createAccountModel(currency string, balance string) domain.Account {
+func createAccountModel(currency string, balance string) (domain.Account, error) {
 
-	floatBalance, _ := strconv.ParseFloat(balance, 64)
-	a := domain.Account{
+	floatBalance, err := strconv.ParseFloat(balance, 64)
+
+	if err != nil {
+		return domain.Account{}, err
+	}
+
+	account := domain.Account{
 		Currency: domain.ToCurrency(currency),
 		Balance:  floatBalance,
 	}
 
-	return a
+	return account, nil
 }
 
-func (a *AccountStorage) WriteAccount(client domain.Client, currency domain.Currency) {
+func (a *AccountStorage) WriteAccount(client domain.Client, currency domain.Currency) error {
 	f, err := os.OpenFile(filePath, os.O_WRONLY|os.O_APPEND, os.ModeAppend.Perm())
 	if err != nil {
-		log.Fatal("Unable to read input file "+filePath, err)
+		return err
 	}
 	defer f.Close()
 
@@ -68,14 +77,15 @@ func (a *AccountStorage) WriteAccount(client domain.Client, currency domain.Curr
 
 	w.WriteAll(data)
 	if err := w.Error(); err != nil {
-		log.Fatal(err)
+		return err
 	}
+	return nil
 }
 
-func (a *AccountStorage) DeleteAccount(id int, currency domain.Currency) {
+func (a *AccountStorage) DeleteAccount(id int, currency domain.Currency) error {
 	oldFile, err := os.OpenFile(filePath, os.O_RDONLY, os.ModeAppend.Perm())
 	if err != nil {
-		log.Fatal("Unable to read input file "+filePath, err)
+		return err
 	}
 
 	oldFileReader := csv.NewReader(oldFile)
@@ -84,7 +94,7 @@ func (a *AccountStorage) DeleteAccount(id int, currency domain.Currency) {
 	// Write the CSV data
 	newFile, err := os.Create(tempFileName)
 	if err != nil {
-		panic(err)
+		return err
 	}
 
 	newFileWriter := csv.NewWriter(newFile)
@@ -97,18 +107,20 @@ func (a *AccountStorage) DeleteAccount(id int, currency domain.Currency) {
 		}
 
 		if err != nil {
-			log.Fatal(err)
+			return err
 		}
 
 		if record[0] != strconv.Itoa(id) || record[3] != currency.StringAcronym() {
-			newFileWriter.Write(record)
+			err := newFileWriter.Write(record)
+
+			return err
 		}
 	}
 
 	oldFile.Close()
 	removeError := os.Remove(fileName)
 	if removeError != nil {
-		log.Fatal(removeError)
+		return err
 	}
 
 	// Вызываем Flush чтобы гарантировать, что все буферизованные данные записаны в ваш файл перед закрытием
@@ -116,14 +128,15 @@ func (a *AccountStorage) DeleteAccount(id int, currency domain.Currency) {
 	newFile.Close()
 	renameError := os.Rename(tempFileName, fileName)
 	if renameError != nil {
-		log.Fatal(renameError)
+		return err
 	}
+	return nil
 }
 
-func (a *AccountStorage) UpdateAccountBalance(client domain.Client, currency domain.Currency, moneyAmount float64) {
+func (a *AccountStorage) UpdateAccountBalance(client domain.Client, currency domain.Currency, moneyAmount float64) error {
 	oldFile, err := os.OpenFile(filePath, os.O_RDONLY, os.ModeAppend.Perm())
 	if err != nil {
-		log.Fatal("Unable to read input file "+filePath, err)
+		return err
 	}
 
 	oldFileReader := csv.NewReader(oldFile)
@@ -132,7 +145,7 @@ func (a *AccountStorage) UpdateAccountBalance(client domain.Client, currency dom
 	// Write the CSV data
 	newFile, err := os.Create(tempFileName)
 	if err != nil {
-		panic(err)
+		return err
 	}
 
 	newFileWriter := csv.NewWriter(newFile)
@@ -145,15 +158,16 @@ func (a *AccountStorage) UpdateAccountBalance(client domain.Client, currency dom
 		}
 
 		if err != nil {
-			log.Fatal(err)
+			return err
 		}
 
 		if record[0] != strconv.Itoa(client.ClientId) || record[3] != currency.StringAcronym() {
-			newFileWriter.Write(record)
+			err := newFileWriter.Write(record)
+			return err
 		} else {
 			floatOldBalance, err := strconv.ParseFloat(record[4], 64)
 			if err != nil {
-				log.Fatal(err)
+				return err
 			}
 
 			data := []string{
@@ -163,14 +177,17 @@ func (a *AccountStorage) UpdateAccountBalance(client domain.Client, currency dom
 				fmt.Sprintf("%.2f", floatOldBalance+moneyAmount),
 			}
 
-			newFileWriter.Write(data)
+			writeErr := newFileWriter.Write(data)
+			if err != nil {
+				return writeErr
+			}
 		}
 	}
 
 	oldFile.Close()
 	removeError := os.Remove(fileName)
 	if removeError != nil {
-		log.Fatal(removeError)
+		return removeError
 	}
 
 	// Вызываем Flush чтобы гарантировать, что все буферизованные данные записаны в ваш файл перед закрытием
@@ -178,6 +195,7 @@ func (a *AccountStorage) UpdateAccountBalance(client domain.Client, currency dom
 	newFile.Close()
 	renameError := os.Rename(tempFileName, fileName)
 	if renameError != nil {
-		log.Fatal(renameError)
+		return removeError
 	}
+	return nil
 }

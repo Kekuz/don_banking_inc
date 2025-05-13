@@ -3,21 +3,21 @@ package csv
 import (
 	"encoding/csv"
 	"io"
-	"log"
 	"os"
 	"strconv"
 
 	"github.com/Kekuz/don_banking_inc/internal/domain"
+	"github.com/Kekuz/don_banking_inc/internal/error"
 )
 
 type ClientStorage struct{
 	AccountStorage
 }
 
-func (c *ClientStorage) FindById(id int) domain.Client {
+func (c *ClientStorage) FindById(id int) (domain.Client, error) {
 	f, err := os.Open(filePath)
 	if err != nil {
-		log.Fatal("Unable to read input file "+filePath, err)
+		return domain.Client{}, err
 	}
 	defer f.Close()
 
@@ -30,15 +30,25 @@ func (c *ClientStorage) FindById(id int) domain.Client {
 		record, err := reader.Read()
 
 		if err == io.EOF {
-			break
+			notFountErr := apperror.New(
+				err,
+				apperror.NoClientWithThatId,
+				"Клиент не найден",
+				"csv.FindById",
+			)
+			return domain.Client{}, notFountErr
 		}
 
 		if err != nil {
-			log.Fatal(err)
+			return domain.Client{}, err
 		}
 
 		if(record[0] == strconv.Itoa(id)){
-			accounts := c.AccountStorage.FindById(id)
+			accounts, err := c.AccountStorage.FindById(id)
+
+			if err != nil {
+				return domain.Client{}, err
+			}
 
 			client = domain.Client{
 				ClientId: id,
@@ -48,9 +58,7 @@ func (c *ClientStorage) FindById(id int) domain.Client {
 			}
 			// Если нашли клиента, то дальше можно уже не смотреть
 			// Оптимизации :)
-			break
+			return client, nil
 		}
 	}
-
-	return client
 }
