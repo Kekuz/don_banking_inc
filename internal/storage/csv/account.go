@@ -8,6 +8,7 @@ import (
 	"strconv"
 
 	"github.com/Kekuz/don_banking_inc/internal/domain"
+	"github.com/Kekuz/don_banking_inc/internal/error"
 )
 
 type AccountStorage struct{}
@@ -28,7 +29,17 @@ func (a *AccountStorage) FindById(id int) ([]domain.Account, error) {
 		record, err := reader.Read()
 
 		if err == io.EOF {
-			break
+			if len(accounts) == 0 {
+				notFountErr := apperror.New(
+					err,
+					apperror.NoAccountsWithThatId,
+					"Счет для пользователя "+strconv.Itoa(id)+" не найден",
+					"csv.FindById",
+				)
+				return nil, notFountErr
+			} else {
+				return accounts, nil
+			}
 		}
 
 		if err != nil {
@@ -44,8 +55,6 @@ func (a *AccountStorage) FindById(id int) ([]domain.Account, error) {
 			accounts = append(accounts, account)
 		}
 	}
-
-	return accounts, nil
 }
 
 func createAccountModel(currency string, balance string) (domain.Account, error) {

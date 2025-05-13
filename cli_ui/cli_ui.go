@@ -62,6 +62,11 @@ func Run() {
 	for {
 		pkg.CallClear()
 		pkg.PrintHeader()
+		//TODO
+		/* err := updateUi()
+		if err != nil {
+			panic(err)
+		} */
 		PrintUiState()
 
 		PrintUiClientMainMenu()
@@ -96,13 +101,18 @@ func InsertClientId() error {
 	return nil
 }
 
-/* func updateUi() {
-	client := clientHandler.GetClientById(ui.ClientId)
+func updateUi() error {
+	client, err := clientHandler.GetClientById(ui.ClientId)
+
+	if err != nil {
+		return err
+	}
 
 	ui = uiState{
 		Client: client,
 	}
-} */
+	return nil
+}
 
 func PrintUiState() {
 	fmt.Printf("Номер клиента: %s\n", strconv.Itoa(ui.ClientId))
@@ -169,25 +179,39 @@ func pickAccountScreen() {
 
 	fmt.Println("Выберите интересующмий счет:")
 	fmt.Println()
+	var input string
 
 	accounts, err := accountHandler.GetAccountsById(ui.ClientId)
-	if err != nil {
-		panic(err)
+	appError, ok := err.(*apperror.AppError)
+	if ok {
+		fmt.Println(appError.ErrorType.String())
+		fmt.Println("Нажмте Enter чтобы вернуться")
+		fmt.Scanf("%s\n")
+		return
 	}
 
 	for i, account := range accounts {
 		fmt.Printf("%d. %s - %f\n", i+1, account.Currency, account.Balance)
 	}
+	fmt.Scanf("%s\n", &input)
 
-	var choose string
-	fmt.Scanf("%s\n", &choose)
-
-	i, err := strconv.Atoi(choose)
+	i, err := strconv.Atoi(input)
 	if err != nil {
-		panic(err)
+		fmt.Println("Вы ввели неверное значение")
+		fmt.Println("Нажмте Enter чтобы вернуться")
+		fmt.Scanf("%s\n")
+		return
 	}
 
-	ui.currentAccount = accounts[i-1].Currency
+	if i > len(accounts) || i <= 0 {
+		fmt.Println("Вы ввели неверное значение")
+		fmt.Println("Нажмте Enter чтобы вернуться")
+		fmt.Scanf("%s\n")
+		return
+	} else {
+		ui.currentAccount = accounts[i-1].Currency
+	}
+
 }
 
 func putMoneyIntoAccountScreen() {
