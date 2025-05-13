@@ -178,7 +178,7 @@ func (a *AccountStorage) UpdateAccountBalance(client domain.Client, currency dom
 			}
 
 			writeErr := newFileWriter.Write(data)
-			if err != nil {
+			if writeErr != nil {
 				return writeErr
 			}
 		}
