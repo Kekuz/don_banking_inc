@@ -3,22 +3,28 @@ package apperror
 type ErrorType int
 
 const (
-	IncorrectClientId ErrorType = iota
-	NoClientWithThatId
-	NoAccountsWithThatId
-	WrongInputValue
+	IncorrectClientIdException ErrorType = iota
+	ClientNotFoundException
+	AccountNotFoundException
+	WrongInputValueException
+	NegativeInputValueException
+	InsufficientFundsException
 )
 
 func (i ErrorType) String() string {
 	switch i {
-	case IncorrectClientId:
+	case IncorrectClientIdException:
 		return "Неверный номер клиента"
-	case NoClientWithThatId:
+	case ClientNotFoundException:
 		return "Нет клиента с таким ID"
-	case NoAccountsWithThatId:
+	case AccountNotFoundException:
 		return "Нет счета с таким ID"
-	case WrongInputValue:
+	case WrongInputValueException:
 		return "Вы ввели неверное значение"
+	case InsufficientFundsException:
+		return "Вы пытаетесь снять средства, превышающие остаток"
+	case NegativeInputValueException:
+		return "Вы ввели отрицательное число"
 	default:
 		return "Неизвестная ошибка"
 	}

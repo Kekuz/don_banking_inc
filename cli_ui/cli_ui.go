@@ -76,8 +76,7 @@ func Run() {
 			} else {
 				fmt.Println(err.Error())
 			}
-			fmt.Println("Нажмте Enter чтобы вернуться")
-			fmt.Scanf("%s\n")
+			pkg.PressEnterToReturn()
 		}
 	}
 }
@@ -92,7 +91,7 @@ func InsertClientId() error {
 	if err != nil {
 		return apperror.New(
 			err,
-			apperror.IncorrectClientId,
+			apperror.IncorrectClientIdException,
 			"Неверный номер клиента: "+fmt.Sprintf("%v", strId),
 			"cliui.InsertClientId",
 		)
@@ -123,8 +122,7 @@ func PrintUiState() {
 		} else {
 			fmt.Println(err.Error())
 		}
-		fmt.Println("Нажмте Enter чтобы вернуться")
-		fmt.Scanf("%s\n")
+		pkg.PressEnterToReturn()
 		return
 	}
 
@@ -151,6 +149,7 @@ func PrintUiClientMainMenu() error {
 
 	var input string
 	fmt.Scanf("%s\n", &input)
+	pkg.CallClear()
 
 	switch input {
 	case "1":
@@ -171,10 +170,8 @@ func PrintUiClientMainMenu() error {
 }
 
 func createAccountScreen() error {
-	pkg.CallClear()
 	fmt.Println("Выберите валюту счета: ")
-	var input string
-
+	
 	accounts, err := accountHandler.GetAccountsById(ui.ClientId)
 	if err != nil {
 		return err
@@ -198,25 +195,16 @@ func createAccountScreen() error {
 		}
 	}
 
+	var input string
 	fmt.Scanf("%s\n", &input)
 
 	i, err := strconv.Atoi(input)
 	if err != nil {
-		return apperror.New(
-			err,
-			apperror.WrongInputValue,
-			"Входное значение "+input+" не верно",
-			"cliui.createAccountScreen",
-		)
+		return createWrongInputError(err, input, "cliui.createAccountScreen")
 	}
 
 	if i > len(notExistingCurrencies) || i <= 0 {
-		return apperror.New(
-			nil,
-			apperror.WrongInputValue,
-			"Входное значение "+input+" не верно",
-			"cliui.createAccountScreen",
-		)
+		return createWrongInputError(nil, input, "cliui.createAccountScreen")
 	} else {
 		err := accountHandler.CreateNewAccount(ui.Client, notExistingCurrencies[i-1])
 		if err != nil {
@@ -227,11 +215,7 @@ func createAccountScreen() error {
 }
 
 func pickAccountScreen() error {
-	pkg.CallClear()
-
 	fmt.Println("Выберите интересующмий счет:")
-	fmt.Println()
-	var input string
 
 	accounts, err := accountHandler.GetAccountsById(ui.ClientId)
 	if err != nil {
@@ -239,110 +223,95 @@ func pickAccountScreen() error {
 	}
 
 	for i, account := range accounts {
-		fmt.Printf("%d. %s - %f\n", i+1, account.Currency, account.Balance)
+		fmt.Printf("%d. %s - %.2f\n", i+1, account.Currency, account.Balance)
 	}
+
+	var input string
 	fmt.Scanf("%s\n", &input)
 
 	intInput, err := strconv.Atoi(input)
 	if err != nil {
-		return apperror.New(
-			err,
-			apperror.WrongInputValue,
-			"Входное значение "+input+" не верно",
-			"cliui.createAccountScreen",
-		)
+		return createWrongInputError(err, input, "cliui.pickAccountScreen")
 	}
 
 	if intInput > len(accounts) || intInput <= 0 {
-		return apperror.New(
-			err,
-			apperror.WrongInputValue,
-			"Входное значение "+input+" не верно",
-			"cliui.createAccountScreen",
-		)
+		return createWrongInputError(err, input, "cliui.pickAccountScreen")
 	} else {
 		ui.currentAccount = accounts[intInput-1].Currency
 	}
 	return nil
 }
 
-//TODO обработать ошибки
 func putMoneyIntoAccountScreen() error {
-	pkg.CallClear()
-
 	fmt.Println("Введите сумму, которую необходимо внести:")
-	fmt.Println()
 
-	var inputSum string
-	fmt.Scanf("%s\n", &inputSum)
+	var input string
+	fmt.Scanf("%s\n", &input)
 
-	floatSum, err := strconv.ParseFloat(inputSum, 64)
+	floatInput, err := strconv.ParseFloat(input, 64)
 	if err != nil {
-		panic(err)
+		return createWrongInputError(err, input, "cliui.putMoneyIntoAccountScreen")
 	}
 
-	err = accountHandler.PutMoneyIntoAccountBalance(ui.Client, ui.currentAccount, floatSum)
+	err = accountHandler.PutMoneyIntoAccountBalance(ui.Client, ui.currentAccount, floatInput)
 	if err != nil {
-		panic(err)
+		return err
 	}
 
-	fmt.Println("Нажмте Enter чтобы вернуться")
-	fmt.Scanf("%s\n")
+	pkg.PressEnterToReturn()
 	return nil
 }
 
-//TODO обработать ошибки
 func debitMoneyIntoAccountScreen() error {
-	pkg.CallClear()
-
 	fmt.Println("Введите сумму, которую необходимо снять:")
-	fmt.Println()
 
-	var inputSum string
-	fmt.Scanf("%s\n", &inputSum)
+	var input string
+	fmt.Scanf("%s\n", &input)
 
-	floatSum, err := strconv.ParseFloat(inputSum, 64)
+	floatSum, err := strconv.ParseFloat(input, 64)
 	if err != nil {
-		panic(err)
+		return createWrongInputError(err, input, "cliui.debitMoneyIntoAccountScreen")
 	}
 
 	err = accountHandler.DebitMoneyFromAccountBalance(ui.Client, ui.currentAccount, floatSum)
 	if err != nil {
-		panic(err)
+		return err
 	}
 
-	fmt.Println("Нажмте Enter чтобы вернуться")
-	fmt.Scanf("%s\n")
+	pkg.PressEnterToReturn()
 	return nil
 }
 
-//TODO обработать ошибки
-func printClientJSON() error {
-	pkg.CallClear()
+func deleteAccountScreen() error {
+	err := accountHandler.DeleteAccount(ui.ClientId, ui.currentAccount)
+	if err != nil {
+		fmt.Println("Не удалось удалить счет")
+		return err
+	} else {
+		fmt.Println("Счет удален")
+		ui.currentAccount = domain.UNKNOWN
+		
+		pkg.PressEnterToReturn()
+		return nil
+	}
+}
 
+func printClientJSON() error {
 	data, err := json.Marshal(ui.Client)
 	if err != nil {
-		panic(err)
+		return err
 	}
 
 	fmt.Println(string(data))
-	fmt.Println("Нажмте Enter чтобы вернуться")
-	fmt.Scanf("%s\n")
+	pkg.PressEnterToReturn()
 	return nil
 }
 
-//TODO обработать ошибки
-func deleteAccountScreen() error {
-	pkg.CallClear()
-
-	err := accountHandler.DeleteAccount(ui.ClientId, ui.currentAccount)
-	if err != nil {
-		panic(err)
-	}
-
-	//TODO сделать обработку ошибок
-	fmt.Println("Счет удален")
-	fmt.Println("Нажмте Enter чтобы вернуться")
-	fmt.Scanf("%s\n")
-	return nil
+func createWrongInputError(err error, input, op string) *apperror.AppError {
+	return apperror.New(
+		err,
+		apperror.WrongInputValueException,
+		"Входное значение "+input+" неверно",
+		op,
+	)
 }

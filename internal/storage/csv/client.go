@@ -7,10 +7,10 @@ import (
 	"strconv"
 
 	"github.com/Kekuz/don_banking_inc/internal/domain"
-	"github.com/Kekuz/don_banking_inc/internal/error"
+	apperror "github.com/Kekuz/don_banking_inc/internal/error"
 )
 
-type ClientStorage struct{
+type ClientStorage struct {
 	AccountStorage
 }
 
@@ -32,7 +32,7 @@ func (c *ClientStorage) FindById(id int) (domain.Client, error) {
 		if err == io.EOF {
 			notFountErr := apperror.New(
 				err,
-				apperror.NoClientWithThatId,
+				apperror.ClientNotFoundException,
 				"Клиент не найден",
 				"csv.FindById",
 			)
@@ -43,7 +43,7 @@ func (c *ClientStorage) FindById(id int) (domain.Client, error) {
 			return domain.Client{}, err
 		}
 
-		if(record[0] == strconv.Itoa(id)){
+		if record[0] == strconv.Itoa(id) {
 			accounts, err := c.AccountStorage.FindById(id)
 
 			if err != nil {
@@ -51,10 +51,10 @@ func (c *ClientStorage) FindById(id int) (domain.Client, error) {
 			}
 
 			client = domain.Client{
-				ClientId: id,
+				ClientId:  id,
 				FirstName: record[1],
-				LastName: record[2],
-				Accounts: accounts,
+				LastName:  record[2],
+				Accounts:  accounts,
 			}
 			// Если нашли клиента, то дальше можно уже не смотреть
 			// Оптимизации :)

@@ -8,7 +8,7 @@ import (
 	"strconv"
 
 	"github.com/Kekuz/don_banking_inc/internal/domain"
-	"github.com/Kekuz/don_banking_inc/internal/error"
+	apperror "github.com/Kekuz/don_banking_inc/internal/error"
 )
 
 type AccountStorage struct{}
@@ -32,7 +32,7 @@ func (a *AccountStorage) FindById(id int) ([]domain.Account, error) {
 			if len(accounts) == 0 {
 				notFountErr := apperror.New(
 					err,
-					apperror.NoAccountsWithThatId,
+					apperror.AccountNotFoundException,
 					"Счет для пользователя "+strconv.Itoa(id)+" не найден",
 					"csv.FindById",
 				)
@@ -58,7 +58,6 @@ func (a *AccountStorage) FindById(id int) ([]domain.Account, error) {
 }
 
 func createAccountModel(currency string, balance string) (domain.Account, error) {
-
 	floatBalance, err := strconv.ParseFloat(balance, 64)
 
 	if err != nil {
@@ -96,19 +95,36 @@ func (a *AccountStorage) DeleteAccount(id int, currency domain.Currency) error {
 	if err != nil {
 		return err
 	}
-	defer oldFile.Close()
 
 	oldFileReader := csv.NewReader(oldFile)
 	oldFileReader.FieldsPerRecord = -1
 
-	// Write the CSV data
 	newFile, err := os.Create(tempFileName)
 	if err != nil {
 		return err
 	}
-	defer newFile.Close()
 
 	newFileWriter := csv.NewWriter(newFile)
+
+	// Вот так вот хитро закрываем файл и переименовываем его
+	defer func() {
+		// Вызываем Flush чтобы гарантировать, что все буферизованные данные записаны в ваш файл перед закрытием
+		newFileWriter.Flush()
+		newFile.Close()
+		renameError := os.Rename(tempFileName, fileName)
+		if renameError != nil {
+			err = renameError
+		}
+	}()
+
+	// Вот так вот хитро закрываем и удаляем файл
+	defer func() {
+		oldFile.Close()
+		removeError := os.Remove(fileName)
+		if removeError != nil {
+			err = removeError
+		}
+	}()
 
 	for {
 		record, err := oldFileReader.Read()
@@ -128,20 +144,7 @@ func (a *AccountStorage) DeleteAccount(id int, currency domain.Currency) error {
 		}
 	}
 
-	oldFile.Close()
-	removeError := os.Remove(fileName)
-	if removeError != nil {
-		return err
-	}
-
-	// Вызываем Flush чтобы гарантировать, что все буферизованные данные записаны в ваш файл перед закрытием
-	newFileWriter.Flush()
-	newFile.Close()
-	renameError := os.Rename(tempFileName, fileName)
-	if renameError != nil {
-		return err
-	}
-	return nil
+	return err
 }
 
 func (a *AccountStorage) UpdateAccountBalance(client domain.Client, currency domain.Currency, moneyAmount float64) error {
@@ -149,19 +152,36 @@ func (a *AccountStorage) UpdateAccountBalance(client domain.Client, currency dom
 	if err != nil {
 		return err
 	}
-	defer oldFile.Close()
 
 	oldFileReader := csv.NewReader(oldFile)
 	oldFileReader.FieldsPerRecord = -1
 
-	// Write the CSV data
 	newFile, err := os.Create(tempFileName)
 	if err != nil {
 		return err
 	}
-	defer newFile.Close()
 
 	newFileWriter := csv.NewWriter(newFile)
+
+	// Вот так вот хитро закрываем файл и переименовываем его
+	defer func() {
+		// Вызываем Flush чтобы гарантировать, что все буферизованные данные записаны в ваш файл перед закрытием
+		newFileWriter.Flush()
+		newFile.Close()
+		renameError := os.Rename(tempFileName, fileName)
+		if renameError != nil {
+			err = renameError
+		}
+	}()
+
+	// Вот так вот хитро закрываем и удаляем файл
+	defer func() {
+		oldFile.Close()
+		removeError := os.Remove(fileName)
+		if removeError != nil {
+			err = removeError
+		}
+	}()
 
 	for {
 		record, err := oldFileReader.Read()
@@ -184,6 +204,14 @@ func (a *AccountStorage) UpdateAccountBalance(client domain.Client, currency dom
 			if err != nil {
 				return err
 			}
+			if floatOldBalance+moneyAmount < 0 {
+				return apperror.New(
+					nil,
+					apperror.InsufficientFundsException,
+					"Вы пытаетесь снять больше денег чем остаток "+fmt.Sprintf("%.2f", moneyAmount),
+					"csv.UpdateAccountBalance",
+				)
+			}
 
 			data := []string{
 				strconv.Itoa(client.ClientId),
@@ -198,19 +226,5 @@ func (a *AccountStorage) UpdateAccountBalance(client domain.Client, currency dom
 			}
 		}
 	}
-
-	oldFile.Close()
-	removeError := os.Remove(fileName)
-	if removeError != nil {
-		return removeError
-	}
-
-	// Вызываем Flush чтобы гарантировать, что все буферизованные данные записаны в ваш файл перед закрытием
-	newFileWriter.Flush()
-	newFile.Close()
-	renameError := os.Rename(tempFileName, fileName)
-	if renameError != nil {
-		return removeError
-	}
-	return nil
+	return err
 }

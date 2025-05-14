@@ -43,3 +43,8 @@ func PrintHeader() {
 	fmt.Println("                                                         __/ |           ")
 	fmt.Println("                                                        |___/            ") 
 }
+
+func PressEnterToReturn() {
+	fmt.Println("Нажмите Enter чтобы вернуться")
+	fmt.Scanf("%s\n")
+}

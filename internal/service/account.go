@@ -1,7 +1,10 @@
 package service
 
 import (
+	"fmt"
+
 	"github.com/Kekuz/don_banking_inc/internal/domain"
+	apperror "github.com/Kekuz/don_banking_inc/internal/error"
 )
 
 type AccountStorage interface {
@@ -28,9 +31,25 @@ func (s *AccountService) DeleteAccount(id int, currency domain.Currency) error {
 }
 
 func (s *AccountService) PutMoneyIntoAccountBalance(client domain.Client, currency domain.Currency, moneyAmount float64) error{
+	if moneyAmount < 0 {
+		return apperror.New(
+			nil,
+			apperror.NegativeInputValueException,
+			"Вы ввели отрицательное число "+fmt.Sprintf("%.2f", moneyAmount),
+			"service.PutMoneyIntoAccountBalance",
+		)
+	}
 	return s.Storage.UpdateAccountBalance(client, currency, moneyAmount)
 }
 
 func (s *AccountService) DebitMoneyFromAccountBalance(client domain.Client, currency domain.Currency, moneyAmount float64) error {
+	if moneyAmount < 0 {
+		return apperror.New(
+			nil,
+			apperror.NegativeInputValueException,
+			"Вы ввели отрицательное число "+fmt.Sprintf("%.2f", moneyAmount),
+			"service.DebitMoneyFromAccountBalance",
+		)
+	}
 	return s.Storage.UpdateAccountBalance(client, currency, -moneyAmount)
 }
