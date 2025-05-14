@@ -18,7 +18,7 @@ func NewAccountHandler(s AccountService) *AccountHandler {
 	return &AccountHandler{service: s}
 }
 
-func (h *AccountHandler) GetAccountsById(id int) ([]domain.Account, error){
+func (h *AccountHandler) GetAccountsById(id int) ([]domain.Account, error) {
 	accounts, err := h.service.FindById(id)
 	return accounts, err
 }
@@ -37,4 +37,17 @@ func (h *AccountHandler) DebitMoneyFromAccountBalance(client domain.Client, curr
 
 func (h *AccountHandler) DeleteAccount(id int, currency domain.Currency) error {
 	return h.service.DeleteAccount(id, currency)
+}
+
+func (h *AccountHandler) GetAllCurrencies(id int) ([]domain.Currency, error) {
+	var accounts, err = h.GetAccountsById(id)
+	if err != nil {
+		return nil, err
+	}
+
+	currencies := make([]domain.Currency, len(accounts))
+	for i := range accounts {
+		currencies[i] = accounts[i].Currency
+	}
+	return currencies, nil
 }

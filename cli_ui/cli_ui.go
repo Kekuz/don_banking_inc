@@ -55,7 +55,7 @@ func Run() {
 		pkg.PrintHeader()
 		appError, ok := err.(*apperror.AppError)
 		if ok {
-			fmt.Println(appError.ErrorType.String())
+			fmt.Println(appError.ErrorType)
 		} else {
 			fmt.Println(err.Error())
 		}
@@ -65,29 +65,21 @@ func Run() {
 	for {
 		pkg.CallClear()
 		pkg.PrintHeader()
-		PrintUiState()
+		
+		uiStateError := PrintUiState()
+		handleError(uiStateError)
 
 		err := PrintUiClientMainMenu()
-
-		if err != nil {
-			appError, ok := err.(*apperror.AppError)
-			if ok {
-				fmt.Println(appError.ErrorType.String())
-			} else {
-				fmt.Println(err.Error())
-			}
-			pkg.PressEnterToReturn()
-		}
+		handleError(err)
 	}
 }
 
 func InsertClientId() error {
-	var id string
+	var input string
 	fmt.Println("Введите номер клиента:")
-	fmt.Scanf("%s\n", &id)
+	fmt.Scanf("%s\n", &input)
 
-	strId, err := strconv.Atoi(id)
-
+	strId, err := strconv.Atoi(input)
 	if err != nil {
 		return apperror.New(
 			err,
@@ -98,45 +90,38 @@ func InsertClientId() error {
 	}
 
 	client, err := clientHandler.GetClientById(strId)
-
 	if err != nil {
 		return err
+	} else {
+		ui = uiState{Client: client}
+		return nil
 	}
-
-	ui = uiState{
-		Client: client,
-	}
-	return nil
 }
 
-func PrintUiState() {
+func PrintUiState() error {
 	fmt.Printf("Номер клиента: %s\n", strconv.Itoa(ui.ClientId))
 	fmt.Printf("Имя: %s\n", ui.FirstName)
 	fmt.Printf("Фамилия: %s\n", ui.LastName)
 
-	var accounts, err = accountHandler.GetAccountsById(ui.ClientId)
+	currencies, err := accountHandler.GetAllCurrencies(ui.ClientId)
 	if err != nil {
-		appError, ok := err.(*apperror.AppError)
-		if ok {
-			fmt.Println(appError.ErrorType.String())
-		} else {
-			fmt.Println(err.Error())
-		}
-		pkg.PressEnterToReturn()
-		return
+		return err
 	}
 
-	currencies := make([]string, len(accounts))
-	for i := range accounts {
-		currencies[i] = accounts[i].Currency.String()
+	stringCurrencies := make([]string, len(currencies))
+	for i := range currencies {
+		stringCurrencies[i] = currencies[i].String()
 	}
-	fmt.Printf("Доступные счета: %s\n", strings.Join(currencies, ", "))
+	fmt.Printf("Доступные счета: %s\n", strings.Join(stringCurrencies, ", "))
 
-	if ui.currentAccount != domain.UNKNOWN {
+	if ui.currentAccount == domain.UNKNOWN {
+		fmt.Printf("Выбранная валюта счета: -\n")
+	} else {
 		fmt.Printf("Выбранная валюта счета: %s\n", ui.currentAccount)
 	}
 
 	fmt.Println()
+	return nil
 }
 
 func PrintUiClientMainMenu() error {
@@ -171,15 +156,10 @@ func PrintUiClientMainMenu() error {
 
 func createAccountScreen() error {
 	fmt.Println("Выберите валюту счета: ")
-	
-	accounts, err := accountHandler.GetAccountsById(ui.ClientId)
+
+	existingCurrencies, err := accountHandler.GetAllCurrencies(ui.ClientId)
 	if err != nil {
 		return err
-	}
-	// Мапим список аккаунтов в список валют
-	existingCurrencies := make([]domain.Currency, len(accounts))
-	for i, v := range accounts {
-		existingCurrencies[i] = v.Currency
 	}
 
 	// Создаем список валют, которые еще не существуют на аккаунте
@@ -290,7 +270,7 @@ func deleteAccountScreen() error {
 	} else {
 		fmt.Println("Счет удален")
 		ui.currentAccount = domain.UNKNOWN
-		
+
 		pkg.PressEnterToReturn()
 		return nil
 	}
@@ -314,4 +294,16 @@ func createWrongInputError(err error, input, op string) *apperror.AppError {
 		"Входное значение "+input+" неверно",
 		op,
 	)
+}
+
+func handleError(err error){
+	if err != nil {
+		appError, ok := err.(*apperror.AppError)
+		if ok {
+			fmt.Println(appError.ErrorType)
+		} else {
+			fmt.Println(err.Error())
+		}
+		pkg.PressEnterToReturn()
+	}
 }
