@@ -265,7 +265,6 @@ func debitMoneyIntoAccountScreen() error {
 func deleteAccountScreen() error {
 	err := accountHandler.DeleteAccount(ui.ClientId, ui.currentAccount)
 	if err != nil {
-		fmt.Println("Не удалось удалить счет")
 		return err
 	} else {
 		fmt.Println("Счет удален")

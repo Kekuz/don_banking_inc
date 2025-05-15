@@ -126,12 +126,26 @@ func (a *AccountStorage) DeleteAccount(id int, currency domain.Currency) error {
 		}
 	}()
 
+	recordsReaded := 0
+	recordsWrited := 0
+
 	for {
 		record, err := oldFileReader.Read()
 
 		if err == io.EOF {
-			break
+			if recordsReaded == recordsWrited {
+				return apperror.New(
+					err,
+					apperror.AccountDeleteException,
+					"Счет для пользователя "+strconv.Itoa(id)+" не удален",
+					"csv.DeleteAccount",
+				)
+			} else {
+				return nil
+			}
 		}
+
+		recordsReaded++
 
 		if err != nil {
 			return err
@@ -141,10 +155,9 @@ func (a *AccountStorage) DeleteAccount(id int, currency domain.Currency) error {
 			if err := newFileWriter.Write(record); err != nil {
 				return err
 			}
+			recordsWrited++
 		}
 	}
-
-	return err
 }
 
 func (a *AccountStorage) UpdateAccountBalance(client domain.Client, currency domain.Currency, moneyAmount float64) error {

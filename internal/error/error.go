@@ -9,22 +9,28 @@ const (
 	WrongInputValueException
 	NegativeInputValueException
 	InsufficientFundsException
+	AccountDeleteException
+	AccountEditException
 )
 
 func (i ErrorType) String() string {
 	switch i {
 	case IncorrectClientIdException:
-		return "Неверный номер клиента"
+		return "Номер клиента неверный"
 	case ClientNotFoundException:
-		return "Нет клиента с таким ID"
+		return "Клиент с таким ID не найден"
 	case AccountNotFoundException:
-		return "Нет счета с таким ID"
+		return "Счет с таким ID не найден"
 	case WrongInputValueException:
-		return "Вы ввели неверное значение"
+		return "Введено неверное значение"
 	case InsufficientFundsException:
-		return "Вы пытаетесь снять средства, превышающие остаток"
+		return "Снемаемые средства, превышающие остаток"
 	case NegativeInputValueException:
-		return "Вы ввели отрицательное число"
+		return "Введено отрицательное число"
+	case AccountDeleteException:
+		return "Ошибка удаления счета"
+	case AccountEditException:
+		return "Ошибка изменения счета"
 	default:
 		return "Неизвестная ошибка"
 	}
