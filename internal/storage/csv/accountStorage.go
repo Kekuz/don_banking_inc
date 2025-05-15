@@ -13,6 +13,7 @@ import (
 
 type AccountStorage struct{}
 
+// FindById is searching Accounts in csv file with name defined in csvConfig.go.
 func (a *AccountStorage) FindById(id int) ([]domain.Account, error) {
 	f, err := os.Open(filePath)
 	if err != nil {
@@ -72,6 +73,9 @@ func createAccountModel(currency string, balance string) (domain.Account, error)
 	return account, nil
 }
 
+// WriteAccount is creating new Account using domain.Client and doman.Currency.
+//
+// String writing in csv file with name defined in csvConfig.go.
 func (a *AccountStorage) WriteAccount(client domain.Client, currency domain.Currency) error {
 	f, err := os.OpenFile(filePath, os.O_WRONLY|os.O_APPEND, os.ModeAppend.Perm())
 	if err != nil {
@@ -90,6 +94,9 @@ func (a *AccountStorage) WriteAccount(client domain.Client, currency domain.Curr
 	return nil
 }
 
+// DeleteAccount is deleting Account using id and doman.Currency.
+//
+// First, it copies the file line by line, deleting the required balance, then deletes the original file and renames the resulting one.
 func (a *AccountStorage) DeleteAccount(id int, currency domain.Currency) error {
 	oldFile, err := os.OpenFile(filePath, os.O_RDONLY, os.ModeAppend.Perm())
 	if err != nil {
@@ -160,6 +167,10 @@ func (a *AccountStorage) DeleteAccount(id int, currency domain.Currency) error {
 	}
 }
 
+// UpdateAccountBalance is updating Account using domain.Client and doman.Currency.
+// String writing in csv file with name defined in csvConfig.go.
+//
+// First, it copies the file line by line, changing the required balance, then deletes the original file and renames the resulting one.
 func (a *AccountStorage) UpdateAccountBalance(client domain.Client, currency domain.Currency, moneyAmount float64) error {
 	oldFile, err := os.OpenFile(filePath, os.O_RDONLY, os.ModeAppend.Perm())
 	if err != nil {

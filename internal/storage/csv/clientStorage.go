@@ -14,6 +14,9 @@ type ClientStorage struct {
 	AccountStorage
 }
 
+//FindById is searching domain.Client in csv file with name defined in csvConfig.go.
+//
+//Func searching first string with eqial id and get all fields.
 func (c *ClientStorage) FindById(id int) (domain.Client, error) {
 	f, err := os.Open(filePath)
 	if err != nil {
