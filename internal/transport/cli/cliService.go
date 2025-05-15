@@ -2,7 +2,7 @@ package cli
 
 import (
 	"github.com/Kekuz/don_banking_inc/internal/domain"
-	"github.com/Kekuz/don_banking_inc/internal/error"
+	apperror "github.com/Kekuz/don_banking_inc/internal/error"
 )
 
 type AccountService interface {
@@ -17,28 +17,28 @@ type ClientService interface {
 	FindById(int) (domain.Client, error)
 }
 
-type CliHandler struct {
+type CliService struct {
 	accountService AccountService
 	clientService  ClientService
 }
 
-func NewCliHandler(as AccountService, cs ClientService) *CliHandler {
-	return &CliHandler{
+func NewCliHandler(as AccountService, cs ClientService) *CliService {
+	return &CliService{
 		accountService: as,
 		clientService:  cs,
 	}
 }
 
-func (h *CliHandler) GetAccountsById(id int) ([]domain.Account, error) {
+func (h *CliService) GetAccountsById(id int) ([]domain.Account, error) {
 	accounts, err := h.accountService.FindById(id)
 	return accounts, err
 }
 
-func (h *CliHandler) CreateNewAccount(client domain.Client, currency domain.Currency) error {
+func (h *CliService) CreateNewAccount(client domain.Client, currency domain.Currency) error {
 	return h.accountService.WriteAccount(client, currency)
 }
 
-func (h *CliHandler) PutMoneyIntoAccountBalance(client domain.Client, currency domain.Currency, moneyAmount float64) error {
+func (h *CliService) PutMoneyIntoAccountBalance(client domain.Client, currency domain.Currency, moneyAmount float64) error {
 	err := h.accountService.PutMoneyIntoAccountBalance(client, currency, moneyAmount)
 	if currency == domain.UNKNOWN {
 		return apperror.New(
@@ -52,7 +52,7 @@ func (h *CliHandler) PutMoneyIntoAccountBalance(client domain.Client, currency d
 	}
 }
 
-func (h *CliHandler) DebitMoneyFromAccountBalance(client domain.Client, currency domain.Currency, moneyAmount float64) error {
+func (h *CliService) DebitMoneyFromAccountBalance(client domain.Client, currency domain.Currency, moneyAmount float64) error {
 	err := h.accountService.DebitMoneyFromAccountBalance(client, currency, moneyAmount)
 	if currency == domain.UNKNOWN {
 		return apperror.New(
@@ -66,7 +66,7 @@ func (h *CliHandler) DebitMoneyFromAccountBalance(client domain.Client, currency
 	}
 }
 
-func (h *CliHandler) DeleteAccount(id int, currency domain.Currency) error {
+func (h *CliService) DeleteAccount(id int, currency domain.Currency) error {
 	err := h.accountService.DeleteAccount(id, currency)
 	if currency == domain.UNKNOWN {
 		return apperror.New(
@@ -80,7 +80,7 @@ func (h *CliHandler) DeleteAccount(id int, currency domain.Currency) error {
 	}
 }
 
-func (h *CliHandler) GetAllCurrencies(id int) ([]domain.Currency, error) {
+func (h *CliService) GetAllCurrencies(id int) ([]domain.Currency, error) {
 	var accounts, err = h.GetAccountsById(id)
 	if err != nil {
 		return nil, err
@@ -93,7 +93,7 @@ func (h *CliHandler) GetAllCurrencies(id int) ([]domain.Currency, error) {
 	return currencies, nil
 }
 
-func (h *CliHandler) GetClientById(id int) (domain.Client, error) {
+func (h *CliService) GetClientById(id int) (domain.Client, error) {
 	client, err := h.clientService.FindById(id)
 	return client, err
 }

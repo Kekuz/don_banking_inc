@@ -21,7 +21,7 @@ type uiState struct {
 }
 
 var ui uiState
-var cliHandler *cli.CliHandler
+var cliHandler *cli.CliService
 
 func init() {
 	ui = uiState{}
