@@ -196,11 +196,22 @@ func (a *AccountStorage) UpdateAccountBalance(client domain.Client, currency dom
 		}
 	}()
 
+	isFileEdited := false
+
 	for {
 		record, err := oldFileReader.Read()
 
 		if err == io.EOF {
-			break
+			if !isFileEdited {
+				return apperror.New(
+					err,
+					apperror.AccountEditException,
+					"Счет для пользователя "+strconv.Itoa(client.ClientId)+" не удален",
+					"csv.DeleteAccount",
+				)
+			} else {
+				return nil
+			}
 		}
 
 		if err != nil {
@@ -237,7 +248,7 @@ func (a *AccountStorage) UpdateAccountBalance(client domain.Client, currency dom
 			if writeErr != nil {
 				return writeErr
 			}
+			isFileEdited = true
 		}
 	}
-	return err
 }

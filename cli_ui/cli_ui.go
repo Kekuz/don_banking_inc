@@ -129,7 +129,7 @@ func PrintUiClientMainMenu() error {
 	fmt.Println("2. Выбрать счет")
 	fmt.Println("3. Положить деньги на счет")
 	fmt.Println("4. Снять деньги со счета")
-	fmt.Println("5. Удалить счет")
+	fmt.Println("5. Удалить выбранный счет")
 	fmt.Println("6. Вывести сериализованные данные о клиенте")
 
 	var input string

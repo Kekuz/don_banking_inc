@@ -1,6 +1,9 @@
 package cli
 
-import "github.com/Kekuz/don_banking_inc/internal/domain"
+import (
+	"github.com/Kekuz/don_banking_inc/internal/domain"
+	"github.com/Kekuz/don_banking_inc/internal/error"
+)
 
 type AccountService interface {
 	FindById(id int) ([]domain.Account, error)
@@ -28,15 +31,45 @@ func (h *AccountHandler) CreateNewAccount(client domain.Client, currency domain.
 }
 
 func (h *AccountHandler) PutMoneyIntoAccountBalance(client domain.Client, currency domain.Currency, moneyAmount float64) error {
-	return h.service.PutMoneyIntoAccountBalance(client, currency, moneyAmount)
+	err := h.service.PutMoneyIntoAccountBalance(client, currency, moneyAmount)
+	if currency == domain.UNKNOWN {
+		return apperror.New(
+			err,
+			apperror.AccountNotSelectedException,
+			"Счет не выбран",
+			"cli.PutMoneyIntoAccountBalance",
+		)
+	} else {
+		return err
+	}
 }
 
 func (h *AccountHandler) DebitMoneyFromAccountBalance(client domain.Client, currency domain.Currency, moneyAmount float64) error {
-	return h.service.DebitMoneyFromAccountBalance(client, currency, moneyAmount)
+	err := h.service.DebitMoneyFromAccountBalance(client, currency, moneyAmount)
+	if currency == domain.UNKNOWN {
+		return apperror.New(
+			err,
+			apperror.AccountNotSelectedException,
+			"Счет не выбран",
+			"cli.DebitMoneyFromAccountBalance",
+		)
+	} else {
+		return err
+	}
 }
 
 func (h *AccountHandler) DeleteAccount(id int, currency domain.Currency) error {
-	return h.service.DeleteAccount(id, currency)
+	err := h.service.DeleteAccount(id, currency)
+	if currency == domain.UNKNOWN {
+		return apperror.New(
+			err,
+			apperror.AccountNotSelectedException,
+			"Счет не выбран",
+			"cli.DeleteAccount",
+		)
+	} else {
+		return err
+	}
 }
 
 func (h *AccountHandler) GetAllCurrencies(id int) ([]domain.Currency, error) {

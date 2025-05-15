@@ -11,6 +11,7 @@ const (
 	InsufficientFundsException
 	AccountDeleteException
 	AccountEditException
+	AccountNotSelectedException
 )
 
 func (i ErrorType) String() string {
@@ -24,13 +25,15 @@ func (i ErrorType) String() string {
 	case WrongInputValueException:
 		return "Введено неверное значение"
 	case InsufficientFundsException:
-		return "Снемаемые средства, превышающие остаток"
+		return "Снимаемые средства, превышающие остаток"
 	case NegativeInputValueException:
 		return "Введено отрицательное число"
 	case AccountDeleteException:
 		return "Ошибка удаления счета"
 	case AccountEditException:
 		return "Ошибка изменения счета"
+	case AccountNotSelectedException:
+		return "Счет не выбран"
 	default:
 		return "Неизвестная ошибка"
 	}
