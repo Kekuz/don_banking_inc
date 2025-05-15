@@ -13,25 +13,33 @@ type AccountService interface {
 	DebitMoneyFromAccountBalance(client domain.Client, currency domain.Currency, moneyAmount float64) error
 }
 
-type AccountHandler struct {
-	service AccountService
+type ClientService interface {
+	FindById(int) (domain.Client, error)
 }
 
-func NewAccountHandler(s AccountService) *AccountHandler {
-	return &AccountHandler{service: s}
+type CliHandler struct {
+	accountService AccountService
+	clientService  ClientService
 }
 
-func (h *AccountHandler) GetAccountsById(id int) ([]domain.Account, error) {
-	accounts, err := h.service.FindById(id)
+func NewCliHandler(as AccountService, cs ClientService) *CliHandler {
+	return &CliHandler{
+		accountService: as,
+		clientService:  cs,
+	}
+}
+
+func (h *CliHandler) GetAccountsById(id int) ([]domain.Account, error) {
+	accounts, err := h.accountService.FindById(id)
 	return accounts, err
 }
 
-func (h *AccountHandler) CreateNewAccount(client domain.Client, currency domain.Currency) error {
-	return h.service.WriteAccount(client, currency)
+func (h *CliHandler) CreateNewAccount(client domain.Client, currency domain.Currency) error {
+	return h.accountService.WriteAccount(client, currency)
 }
 
-func (h *AccountHandler) PutMoneyIntoAccountBalance(client domain.Client, currency domain.Currency, moneyAmount float64) error {
-	err := h.service.PutMoneyIntoAccountBalance(client, currency, moneyAmount)
+func (h *CliHandler) PutMoneyIntoAccountBalance(client domain.Client, currency domain.Currency, moneyAmount float64) error {
+	err := h.accountService.PutMoneyIntoAccountBalance(client, currency, moneyAmount)
 	if currency == domain.UNKNOWN {
 		return apperror.New(
 			err,
@@ -44,8 +52,8 @@ func (h *AccountHandler) PutMoneyIntoAccountBalance(client domain.Client, curren
 	}
 }
 
-func (h *AccountHandler) DebitMoneyFromAccountBalance(client domain.Client, currency domain.Currency, moneyAmount float64) error {
-	err := h.service.DebitMoneyFromAccountBalance(client, currency, moneyAmount)
+func (h *CliHandler) DebitMoneyFromAccountBalance(client domain.Client, currency domain.Currency, moneyAmount float64) error {
+	err := h.accountService.DebitMoneyFromAccountBalance(client, currency, moneyAmount)
 	if currency == domain.UNKNOWN {
 		return apperror.New(
 			err,
@@ -58,8 +66,8 @@ func (h *AccountHandler) DebitMoneyFromAccountBalance(client domain.Client, curr
 	}
 }
 
-func (h *AccountHandler) DeleteAccount(id int, currency domain.Currency) error {
-	err := h.service.DeleteAccount(id, currency)
+func (h *CliHandler) DeleteAccount(id int, currency domain.Currency) error {
+	err := h.accountService.DeleteAccount(id, currency)
 	if currency == domain.UNKNOWN {
 		return apperror.New(
 			err,
@@ -72,7 +80,7 @@ func (h *AccountHandler) DeleteAccount(id int, currency domain.Currency) error {
 	}
 }
 
-func (h *AccountHandler) GetAllCurrencies(id int) ([]domain.Currency, error) {
+func (h *CliHandler) GetAllCurrencies(id int) ([]domain.Currency, error) {
 	var accounts, err = h.GetAccountsById(id)
 	if err != nil {
 		return nil, err
@@ -83,4 +91,9 @@ func (h *AccountHandler) GetAllCurrencies(id int) ([]domain.Currency, error) {
 		currencies[i] = accounts[i].Currency
 	}
 	return currencies, nil
+}
+
+func (h *CliHandler) GetClientById(id int) (domain.Client, error) {
+	client, err := h.clientService.FindById(id)
+	return client, err
 }

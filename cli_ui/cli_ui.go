@@ -8,7 +8,7 @@ import (
 	"strings"
 
 	"github.com/Kekuz/don_banking_inc/internal/domain"
-	"github.com/Kekuz/don_banking_inc/internal/error"
+	apperror "github.com/Kekuz/don_banking_inc/internal/error"
 	"github.com/Kekuz/don_banking_inc/internal/service"
 	"github.com/Kekuz/don_banking_inc/internal/storage/csv"
 	"github.com/Kekuz/don_banking_inc/internal/transport/cli"
@@ -21,28 +21,25 @@ type uiState struct {
 }
 
 var ui uiState
-var accountHandler *cli.AccountHandler
-var clientHandler *cli.ClientHandler
+var cliHandler *cli.CliHandler
 
 func init() {
 	ui = uiState{}
 
 	// Наглядно, правильно инжектим зависимости вручную
 	var accountStorage service.AccountStorage = &csv.AccountStorage{}
+	var clientStorage service.ClientStorage = &csv.ClientStorage{}
 
 	var accountService cli.AccountService = &service.AccountService{
 		Storage: accountStorage,
 	}
 
-	accountHandler = cli.NewAccountHandler(accountService)
-
-	var clientStorage service.ClientStorage = &csv.ClientStorage{}
-
 	var clientService cli.ClientService = &service.ClientService{
 		Storage: clientStorage,
 	}
 
-	clientHandler = cli.NewClientHandler(clientService)
+	cliHandler = cli.NewCliHandler(accountService, clientService)
+
 }
 
 func Run() {
@@ -65,7 +62,7 @@ func Run() {
 	for {
 		pkg.CallClear()
 		pkg.PrintHeader()
-		
+
 		uiStateError := PrintUiState()
 		handleError(uiStateError)
 
@@ -89,7 +86,7 @@ func InsertClientId() error {
 		)
 	}
 
-	client, err := clientHandler.GetClientById(strId)
+	client, err := cliHandler.GetClientById(strId)
 	if err != nil {
 		return err
 	} else {
@@ -103,7 +100,7 @@ func PrintUiState() error {
 	fmt.Printf("Имя: %s\n", ui.FirstName)
 	fmt.Printf("Фамилия: %s\n", ui.LastName)
 
-	currencies, err := accountHandler.GetAllCurrencies(ui.ClientId)
+	currencies, err := cliHandler.GetAllCurrencies(ui.ClientId)
 	if err != nil {
 		return err
 	}
@@ -157,7 +154,7 @@ func PrintUiClientMainMenu() error {
 func createAccountScreen() error {
 	fmt.Println("Выберите валюту счета: ")
 
-	existingCurrencies, err := accountHandler.GetAllCurrencies(ui.ClientId)
+	existingCurrencies, err := cliHandler.GetAllCurrencies(ui.ClientId)
 	if err != nil {
 		return err
 	}
@@ -186,7 +183,7 @@ func createAccountScreen() error {
 	if i > len(notExistingCurrencies) || i <= 0 {
 		return createWrongInputError(nil, input, "cliui.createAccountScreen")
 	} else {
-		err := accountHandler.CreateNewAccount(ui.Client, notExistingCurrencies[i-1])
+		err := cliHandler.CreateNewAccount(ui.Client, notExistingCurrencies[i-1])
 		if err != nil {
 			return err
 		}
@@ -197,7 +194,7 @@ func createAccountScreen() error {
 func pickAccountScreen() error {
 	fmt.Println("Выберите интересующмий счет:")
 
-	accounts, err := accountHandler.GetAccountsById(ui.ClientId)
+	accounts, err := cliHandler.GetAccountsById(ui.ClientId)
 	if err != nil {
 		return err
 	}
@@ -233,7 +230,7 @@ func putMoneyIntoAccountScreen() error {
 		return createWrongInputError(err, input, "cliui.putMoneyIntoAccountScreen")
 	}
 
-	err = accountHandler.PutMoneyIntoAccountBalance(ui.Client, ui.currentAccount, floatInput)
+	err = cliHandler.PutMoneyIntoAccountBalance(ui.Client, ui.currentAccount, floatInput)
 	if err != nil {
 		return err
 	}
@@ -253,7 +250,7 @@ func debitMoneyIntoAccountScreen() error {
 		return createWrongInputError(err, input, "cliui.debitMoneyIntoAccountScreen")
 	}
 
-	err = accountHandler.DebitMoneyFromAccountBalance(ui.Client, ui.currentAccount, floatSum)
+	err = cliHandler.DebitMoneyFromAccountBalance(ui.Client, ui.currentAccount, floatSum)
 	if err != nil {
 		return err
 	}
@@ -263,7 +260,7 @@ func debitMoneyIntoAccountScreen() error {
 }
 
 func deleteAccountScreen() error {
-	err := accountHandler.DeleteAccount(ui.ClientId, ui.currentAccount)
+	err := cliHandler.DeleteAccount(ui.ClientId, ui.currentAccount)
 	if err != nil {
 		return err
 	} else {
@@ -295,7 +292,7 @@ func createWrongInputError(err error, input, op string) *apperror.AppError {
 	)
 }
 
-func handleError(err error){
+func handleError(err error) {
 	if err != nil {
 		appError, ok := err.(*apperror.AppError)
 		if ok {
