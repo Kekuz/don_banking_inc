@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/Kekuz/don_banking_inc/internal/config"
 	"github.com/Kekuz/don_banking_inc/internal/domain"
 	apperror "github.com/Kekuz/don_banking_inc/internal/error"
 	"github.com/Kekuz/don_banking_inc/internal/service"
@@ -24,18 +25,22 @@ var ui uiState
 var cliHandler *cli.CliService
 
 func init() {
-	ui = uiState{}
-
 	// Наглядно, правильно инжектим зависимости вручную
-	var accountStorage service.AccountStorage = &csv.AccountStorage{}
-	var clientStorage service.ClientStorage = &csv.ClientStorage{}
+	var accountStorage service.AccountStorage = &csv.AccountStorage{
+		FilePath:     config.FilePath,
+		FileName:     config.FileName,
+		TempFileName: config.TempFileName,
+	}
+	var clientStorage service.ClientStorage = &csv.ClientStorage{
+		AccountFinder: accountStorage,
+	}
 
 	var accountService cli.AccountService = &service.AccountService{
-		Storage: accountStorage,
+		AccountStorage: accountStorage,
 	}
 
 	var clientService cli.ClientService = &service.ClientService{
-		Storage: clientStorage,
+		ClientStorage: clientStorage,
 	}
 
 	cliHandler = cli.NewCliHandler(accountService, clientService)

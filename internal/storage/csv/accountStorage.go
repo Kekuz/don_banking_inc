@@ -11,11 +11,15 @@ import (
 	apperror "github.com/Kekuz/don_banking_inc/internal/error"
 )
 
-type AccountStorage struct{}
+type AccountStorage struct{
+ 	FilePath string
+	FileName string
+	TempFileName string 
+}
 
 // FindById is searching Accounts in csv file with name defined in csvConfig.go.
 func (a *AccountStorage) FindById(id int) ([]domain.Account, error) {
-	f, err := os.Open(filePath)
+	f, err := os.Open(a.FilePath)
 	if err != nil {
 		return nil, err
 	}
@@ -77,7 +81,7 @@ func createAccountModel(currency string, balance string) (domain.Account, error)
 //
 // String writing in csv file with name defined in csvConfig.go.
 func (a *AccountStorage) WriteAccount(client domain.Client, currency domain.Currency) error {
-	f, err := os.OpenFile(filePath, os.O_WRONLY|os.O_APPEND, os.ModeAppend.Perm())
+	f, err := os.OpenFile(a.FilePath, os.O_WRONLY|os.O_APPEND, os.ModeAppend.Perm())
 	if err != nil {
 		return err
 	}
@@ -98,7 +102,7 @@ func (a *AccountStorage) WriteAccount(client domain.Client, currency domain.Curr
 //
 // First, it copies the file line by line, deleting the required balance, then deletes the original file and renames the resulting one.
 func (a *AccountStorage) DeleteAccount(id int, currency domain.Currency) error {
-	oldFile, err := os.OpenFile(filePath, os.O_RDONLY, os.ModeAppend.Perm())
+	oldFile, err := os.OpenFile(a.FilePath, os.O_RDONLY, os.ModeAppend.Perm())
 	if err != nil {
 		return err
 	}
@@ -106,7 +110,7 @@ func (a *AccountStorage) DeleteAccount(id int, currency domain.Currency) error {
 	oldFileReader := csv.NewReader(oldFile)
 	oldFileReader.FieldsPerRecord = -1
 
-	newFile, err := os.Create(tempFileName)
+	newFile, err := os.Create(a.TempFileName)
 	if err != nil {
 		return err
 	}
@@ -118,7 +122,7 @@ func (a *AccountStorage) DeleteAccount(id int, currency domain.Currency) error {
 		// Вызываем Flush чтобы гарантировать, что все буферизованные данные записаны в ваш файл перед закрытием
 		newFileWriter.Flush()
 		newFile.Close()
-		renameError := os.Rename(tempFileName, fileName)
+		renameError := os.Rename(a.TempFileName, a.FileName)
 		if renameError != nil {
 			err = renameError
 		}
@@ -127,7 +131,7 @@ func (a *AccountStorage) DeleteAccount(id int, currency domain.Currency) error {
 	// Вот так вот хитро закрываем и удаляем файл
 	defer func() {
 		oldFile.Close()
-		removeError := os.Remove(fileName)
+		removeError := os.Remove(a.FileName)
 		if removeError != nil {
 			err = removeError
 		}
@@ -172,7 +176,7 @@ func (a *AccountStorage) DeleteAccount(id int, currency domain.Currency) error {
 //
 // First, it copies the file line by line, changing the required balance, then deletes the original file and renames the resulting one.
 func (a *AccountStorage) UpdateAccountBalance(client domain.Client, currency domain.Currency, moneyAmount float64) error {
-	oldFile, err := os.OpenFile(filePath, os.O_RDONLY, os.ModeAppend.Perm())
+	oldFile, err := os.OpenFile(a.FilePath, os.O_RDONLY, os.ModeAppend.Perm())
 	if err != nil {
 		return err
 	}
@@ -180,7 +184,7 @@ func (a *AccountStorage) UpdateAccountBalance(client domain.Client, currency dom
 	oldFileReader := csv.NewReader(oldFile)
 	oldFileReader.FieldsPerRecord = -1
 
-	newFile, err := os.Create(tempFileName)
+	newFile, err := os.Create(a.TempFileName)
 	if err != nil {
 		return err
 	}
@@ -192,7 +196,7 @@ func (a *AccountStorage) UpdateAccountBalance(client domain.Client, currency dom
 		// Вызываем Flush чтобы гарантировать, что все буферизованные данные записаны в ваш файл перед закрытием
 		newFileWriter.Flush()
 		newFile.Close()
-		renameError := os.Rename(tempFileName, fileName)
+		renameError := os.Rename(a.TempFileName, a.FileName)
 		if renameError != nil {
 			err = renameError
 		}
@@ -201,7 +205,7 @@ func (a *AccountStorage) UpdateAccountBalance(client domain.Client, currency dom
 	// Вот так вот хитро закрываем и удаляем файл
 	defer func() {
 		oldFile.Close()
-		removeError := os.Remove(fileName)
+		removeError := os.Remove(a.FileName)
 		if removeError != nil {
 			err = removeError
 		}

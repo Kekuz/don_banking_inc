@@ -15,22 +15,22 @@ type AccountStorage interface {
 }
 
 type AccountService struct {
-	Storage AccountStorage
+	AccountStorage AccountStorage
 }
 
 func (s *AccountService) FindById(id int) ([]domain.Account, error) {
-	return s.Storage.FindById(id)
+	return s.AccountStorage.FindById(id)
 }
 
 func (s *AccountService) WriteAccount(client domain.Client, currency domain.Currency) error {
-	return s.Storage.WriteAccount(client, currency)
+	return s.AccountStorage.WriteAccount(client, currency)
 }
 
 func (s *AccountService) DeleteAccount(id int, currency domain.Currency) error {
-	return s.Storage.DeleteAccount(id, currency)
+	return s.AccountStorage.DeleteAccount(id, currency)
 }
 
-func (s *AccountService) PutMoneyIntoAccountBalance(client domain.Client, currency domain.Currency, moneyAmount float64) error{
+func (s *AccountService) PutMoneyIntoAccountBalance(client domain.Client, currency domain.Currency, moneyAmount float64) error {
 	if moneyAmount < 0 {
 		return apperror.New(
 			nil,
@@ -39,7 +39,7 @@ func (s *AccountService) PutMoneyIntoAccountBalance(client domain.Client, curren
 			"service.PutMoneyIntoAccountBalance",
 		)
 	}
-	return s.Storage.UpdateAccountBalance(client, currency, moneyAmount)
+	return s.AccountStorage.UpdateAccountBalance(client, currency, moneyAmount)
 }
 
 func (s *AccountService) DebitMoneyFromAccountBalance(client domain.Client, currency domain.Currency, moneyAmount float64) error {
@@ -51,5 +51,5 @@ func (s *AccountService) DebitMoneyFromAccountBalance(client domain.Client, curr
 			"service.DebitMoneyFromAccountBalance",
 		)
 	}
-	return s.Storage.UpdateAccountBalance(client, currency, -moneyAmount)
+	return s.AccountStorage.UpdateAccountBalance(client, currency, -moneyAmount)
 }

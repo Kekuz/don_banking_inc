@@ -1,5 +1,7 @@
 package domain
 
+import "encoding/json"
+
 type Currency int
 
 const (
@@ -55,4 +57,9 @@ func ToCurrency(s string) Currency {
 	default:
 		return UNKNOWN
 	}
+}
+
+// Реализация интерфейса json.Marshaler, чтобы в json выводились не цифры а строки из StringAcronym()
+func (c Currency) MarshalJSON() ([]byte, error) {
+	return json.Marshal(c.StringAcronym())
 }

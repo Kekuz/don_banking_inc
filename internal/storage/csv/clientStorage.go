@@ -6,19 +6,26 @@ import (
 	"os"
 	"strconv"
 
+	config "github.com/Kekuz/don_banking_inc/internal/config"
 	"github.com/Kekuz/don_banking_inc/internal/domain"
 	apperror "github.com/Kekuz/don_banking_inc/internal/error"
 )
 
-type ClientStorage struct {
-	AccountStorage
+// Имплементируем новый интерфейс с одной функцией, чтобы не имплементировать весь AccountStorage
+// Сделано в стиле GO )
+type AccountFinder interface {
+	FindById(id int) ([]domain.Account, error)
 }
 
-//FindById is searching domain.Client in csv file with name defined in csvConfig.go.
+type ClientStorage struct {
+	AccountFinder AccountFinder
+}
+
+// FindById is searching domain.Client in csv file with name defined in csvConfig.go.
 //
-//Func searching first string with eqial id and get all fields.
+// Func searching first string with eqial id and get all fields.
 func (c *ClientStorage) FindById(id int) (domain.Client, error) {
-	f, err := os.Open(filePath)
+	f, err := os.Open(config.FilePath)
 	if err != nil {
 		return domain.Client{}, err
 	}
@@ -47,7 +54,7 @@ func (c *ClientStorage) FindById(id int) (domain.Client, error) {
 		}
 
 		if record[0] == strconv.Itoa(id) {
-			accounts, err := c.AccountStorage.FindById(id)
+			accounts, err := c.AccountFinder.FindById(id)
 
 			if err != nil {
 				return domain.Client{}, err

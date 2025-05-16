@@ -9,9 +9,9 @@ type ClientStorage interface {
 }
 
 type ClientService struct {
-	Storage ClientStorage
+	ClientStorage ClientStorage
 }
 
-func (s *ClientService) FindById(id int) (domain.Client, error){
-	return s.Storage.FindById(id)
+func (s *ClientService) FindById(id int) (domain.Client, error) {
+	return s.ClientStorage.FindById(id)
 }
