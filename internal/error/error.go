@@ -25,7 +25,7 @@ func (i ErrorType) String() string {
 	case WrongInputValueException:
 		return "Введено неверное значение"
 	case InsufficientFundsException:
-		return "Снимаемые средства, превышающие остаток"
+		return "Снимаемые средства, превышают остаток"
 	case NegativeInputValueException:
 		return "Введено отрицательное число"
 	case AccountDeleteException:

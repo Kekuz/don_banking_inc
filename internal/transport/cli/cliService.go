@@ -11,6 +11,7 @@ type AccountService interface {
 	DeleteAccount(id int, currency domain.Currency) error
 	PutMoneyIntoAccountBalance(client domain.Client, currency domain.Currency, moneyAmount float64) error
 	DebitMoneyFromAccountBalance(client domain.Client, currency domain.Currency, moneyAmount float64) error
+	FindAccountByClientIdAndCurrency(clientId int, currency domain.Currency) (domain.Account, error)
 }
 
 type ClientService interface {
@@ -27,6 +28,11 @@ func NewCliHandler(as AccountService, cs ClientService) *CliService {
 		accountService: as,
 		clientService:  cs,
 	}
+}
+
+func (h *CliService) GetClientById(id int) (domain.Client, error) {
+	client, err := h.clientService.FindById(id)
+	return client, err
 }
 
 func (h *CliService) GetAccountsById(id int) ([]domain.Account, error) {
@@ -80,6 +86,10 @@ func (h *CliService) DeleteAccount(id int, currency domain.Currency) error {
 	}
 }
 
+func (h *CliService) FindAccountByClientIdAndCurrency(clientId int, currency domain.Currency) (domain.Account, error){
+	return h.accountService.FindAccountByClientIdAndCurrency(clientId,currency)
+}
+
 func (h *CliService) GetAllCurrencies(id int) ([]domain.Currency, error) {
 	var accounts, err = h.GetAccountsById(id)
 	if err != nil {
@@ -91,9 +101,4 @@ func (h *CliService) GetAllCurrencies(id int) ([]domain.Currency, error) {
 		currencies[i] = accounts[i].Currency
 	}
 	return currencies, nil
-}
-
-func (h *CliService) GetClientById(id int) (domain.Client, error) {
-	client, err := h.clientService.FindById(id)
-	return client, err
 }

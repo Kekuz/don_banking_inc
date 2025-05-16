@@ -2,7 +2,8 @@ package service
 
 import (
 	"fmt"
-
+	"slices"
+	
 	"github.com/Kekuz/don_banking_inc/internal/domain"
 	apperror "github.com/Kekuz/don_banking_inc/internal/error"
 )
@@ -51,5 +52,29 @@ func (s *AccountService) DebitMoneyFromAccountBalance(client domain.Client, curr
 			"service.DebitMoneyFromAccountBalance",
 		)
 	}
+
+	account, err := s.FindAccountByClientIdAndCurrency(client.ClientId, currency)
+	if err != nil {
+		return err
+	}
+
+	if account.Balance-moneyAmount < 0 {
+		return apperror.New(
+			nil,
+			apperror.InsufficientFundsException,
+			"Вы пытаетесь снять больше денег чем остаток "+fmt.Sprintf("%.2f", moneyAmount),
+			"csv.UpdateAccountBalance",
+		)
+	}
 	return s.AccountStorage.UpdateAccountBalance(client, currency, -moneyAmount)
+}
+
+func (s *AccountService) FindAccountByClientIdAndCurrency(clientId int, currency domain.Currency) (domain.Account, error) {
+	accounts, err := s.AccountStorage.FindById(clientId)
+	if err != nil {
+		return domain.Account{}, err
+	}
+
+	idx := slices.IndexFunc(accounts, func(a domain.Account) bool { return a.Currency == currency })
+	return accounts[idx], nil
 }

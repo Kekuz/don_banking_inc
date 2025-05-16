@@ -123,6 +123,11 @@ func PrintUiState() error {
 		fmt.Printf("Выбранная валюта счета: -\n")
 	} else {
 		fmt.Printf("Выбранная валюта счета: %s\n", ui.currentAccount)
+		account, err := cliHandler.FindAccountByClientIdAndCurrency(ui.ClientId, ui.currentAccount)
+		if err != nil {
+			return err
+		}
+		fmt.Printf("Баланс: %.2f %s\n", account.Balance, account.Currency.StringAcronym())
 	}
 
 	fmt.Println()

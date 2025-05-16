@@ -243,14 +243,6 @@ func (a *AccountStorage) UpdateAccountBalance(client domain.Client, currency dom
 			if err != nil {
 				return err
 			}
-			if floatOldBalance+moneyAmount < 0 {
-				return apperror.New(
-					nil,
-					apperror.InsufficientFundsException,
-					"Вы пытаетесь снять больше денег чем остаток "+fmt.Sprintf("%.2f", moneyAmount),
-					"csv.UpdateAccountBalance",
-				)
-			}
 
 			data := []string{
 				strconv.Itoa(client.ClientId),
