@@ -150,6 +150,7 @@ func PrintUiClientMainMenuWithSelectedAccount() error {
 	var input string
 	fmt.Scanf("%s\n", &input)
 	pkg.CallClear()
+	pkg.PrintHeader()
 
 	switch input {
 	case "1":
@@ -177,6 +178,7 @@ func PrintUiClientMainMenuWithoutSelectedAccount() error {
 	var input string
 	fmt.Scanf("%s\n", &input)
 	pkg.CallClear()
+	pkg.PrintHeader()
 
 	switch input {
 	case "1":
