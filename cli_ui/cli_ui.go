@@ -233,7 +233,7 @@ func pickAccountScreen() error {
 }
 
 func putMoneyIntoAccountScreen() error {
-	fmt.Println("Введите сумму, которую необходимо внести:")
+	fmt.Printf("Введите сумму %s, которую необходимо внести:\n", ui.currentAccount.StringAcronym())
 
 	var input string
 	fmt.Scanf("%s\n", &input)
@@ -253,7 +253,7 @@ func putMoneyIntoAccountScreen() error {
 }
 
 func debitMoneyIntoAccountScreen() error {
-	fmt.Println("Введите сумму, которую необходимо снять:")
+	fmt.Printf("Введите сумму %s, которую необходимо снять:\n", ui.currentAccount.StringAcronym())
 
 	var input string
 	fmt.Scanf("%s\n", &input)
@@ -277,7 +277,7 @@ func deleteAccountScreen() error {
 	if err != nil {
 		return err
 	} else {
-		fmt.Println("Счет удален")
+		fmt.Printf("Счет %s удален\n", ui.currentAccount.StringAcronym())
 		ui.currentAccount = domain.UNKNOWN
 
 		pkg.PressEnterToReturn()

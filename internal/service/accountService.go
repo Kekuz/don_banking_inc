@@ -3,7 +3,7 @@ package service
 import (
 	"fmt"
 	"slices"
-	
+
 	"github.com/Kekuz/don_banking_inc/internal/domain"
 	apperror "github.com/Kekuz/don_banking_inc/internal/error"
 )
@@ -28,7 +28,17 @@ func (s *AccountService) WriteAccount(client domain.Client, currency domain.Curr
 }
 
 func (s *AccountService) DeleteAccount(id int, currency domain.Currency) error {
-	return s.AccountStorage.DeleteAccount(id, currency)
+	err := s.AccountStorage.DeleteAccount(id, currency)
+	if currency == domain.UNKNOWN {
+		return apperror.New(
+			err,
+			apperror.AccountNotSelectedException,
+			"Счет не выбран",
+			"service.DeleteAccount",
+		)
+	} else {
+		return err
+	}
 }
 
 func (s *AccountService) PutMoneyIntoAccountBalance(client domain.Client, currency domain.Currency, moneyAmount float64) error {
@@ -40,6 +50,16 @@ func (s *AccountService) PutMoneyIntoAccountBalance(client domain.Client, curren
 			"service.PutMoneyIntoAccountBalance",
 		)
 	}
+
+	if currency == domain.UNKNOWN {
+		return apperror.New(
+			nil,
+			apperror.AccountNotSelectedException,
+			"Счет не выбран",
+			"service.PutMoneyIntoAccountBalance",
+		)
+	}
+
 	return s.AccountStorage.UpdateAccountBalance(client, currency, moneyAmount)
 }
 
@@ -49,6 +69,15 @@ func (s *AccountService) DebitMoneyFromAccountBalance(client domain.Client, curr
 			nil,
 			apperror.NegativeInputValueException,
 			"Вы ввели отрицательное число "+fmt.Sprintf("%.2f", moneyAmount),
+			"service.DebitMoneyFromAccountBalance",
+		)
+	}
+
+	if currency == domain.UNKNOWN {
+		return apperror.New(
+			nil,
+			apperror.AccountNotSelectedException,
+			"Счет не выбран",
 			"service.DebitMoneyFromAccountBalance",
 		)
 	}
@@ -63,9 +92,10 @@ func (s *AccountService) DebitMoneyFromAccountBalance(client domain.Client, curr
 			nil,
 			apperror.InsufficientFundsException,
 			"Вы пытаетесь снять больше денег чем остаток "+fmt.Sprintf("%.2f", moneyAmount),
-			"csv.UpdateAccountBalance",
+			"service.DebitMoneyFromAccountBalance",
 		)
 	}
+
 	return s.AccountStorage.UpdateAccountBalance(client, currency, -moneyAmount)
 }
 
@@ -77,4 +107,17 @@ func (s *AccountService) FindAccountByClientIdAndCurrency(clientId int, currency
 
 	idx := slices.IndexFunc(accounts, func(a domain.Account) bool { return a.Currency == currency })
 	return accounts[idx], nil
+}
+
+func (s *AccountService) GetAllCurrencies(id int) ([]domain.Currency, error) {
+	var accounts, err = s.FindById(id)
+	if err != nil {
+		return nil, err
+	}
+
+	currencies := make([]domain.Currency, len(accounts))
+	for i := range accounts {
+		currencies[i] = accounts[i].Currency
+	}
+	return currencies, nil
 }

@@ -2,7 +2,6 @@ package cli
 
 import (
 	"github.com/Kekuz/don_banking_inc/internal/domain"
-	apperror "github.com/Kekuz/don_banking_inc/internal/error"
 )
 
 type AccountService interface {
@@ -12,6 +11,7 @@ type AccountService interface {
 	PutMoneyIntoAccountBalance(client domain.Client, currency domain.Currency, moneyAmount float64) error
 	DebitMoneyFromAccountBalance(client domain.Client, currency domain.Currency, moneyAmount float64) error
 	FindAccountByClientIdAndCurrency(clientId int, currency domain.Currency) (domain.Account, error)
+	GetAllCurrencies(id int) ([]domain.Currency, error)
 }
 
 type ClientService interface {
@@ -45,60 +45,21 @@ func (h *CliService) CreateNewAccount(client domain.Client, currency domain.Curr
 }
 
 func (h *CliService) PutMoneyIntoAccountBalance(client domain.Client, currency domain.Currency, moneyAmount float64) error {
-	err := h.accountService.PutMoneyIntoAccountBalance(client, currency, moneyAmount)
-	if currency == domain.UNKNOWN {
-		return apperror.New(
-			err,
-			apperror.AccountNotSelectedException,
-			"Счет не выбран",
-			"cli.PutMoneyIntoAccountBalance",
-		)
-	} else {
-		return err
-	}
+	return h.accountService.PutMoneyIntoAccountBalance(client, currency, moneyAmount)
 }
 
 func (h *CliService) DebitMoneyFromAccountBalance(client domain.Client, currency domain.Currency, moneyAmount float64) error {
-	err := h.accountService.DebitMoneyFromAccountBalance(client, currency, moneyAmount)
-	if currency == domain.UNKNOWN {
-		return apperror.New(
-			err,
-			apperror.AccountNotSelectedException,
-			"Счет не выбран",
-			"cli.DebitMoneyFromAccountBalance",
-		)
-	} else {
-		return err
-	}
+	return h.accountService.DebitMoneyFromAccountBalance(client, currency, moneyAmount)
 }
 
 func (h *CliService) DeleteAccount(id int, currency domain.Currency) error {
-	err := h.accountService.DeleteAccount(id, currency)
-	if currency == domain.UNKNOWN {
-		return apperror.New(
-			err,
-			apperror.AccountNotSelectedException,
-			"Счет не выбран",
-			"cli.DeleteAccount",
-		)
-	} else {
-		return err
-	}
+	return h.accountService.DeleteAccount(id, currency)
 }
 
-func (h *CliService) FindAccountByClientIdAndCurrency(clientId int, currency domain.Currency) (domain.Account, error){
-	return h.accountService.FindAccountByClientIdAndCurrency(clientId,currency)
+func (h *CliService) FindAccountByClientIdAndCurrency(clientId int, currency domain.Currency) (domain.Account, error) {
+	return h.accountService.FindAccountByClientIdAndCurrency(clientId, currency)
 }
 
 func (h *CliService) GetAllCurrencies(id int) ([]domain.Currency, error) {
-	var accounts, err = h.GetAccountsById(id)
-	if err != nil {
-		return nil, err
-	}
-
-	currencies := make([]domain.Currency, len(accounts))
-	for i := range accounts {
-		currencies[i] = accounts[i].Currency
-	}
-	return currencies, nil
+	return h.accountService.GetAllCurrencies(id)
 }
