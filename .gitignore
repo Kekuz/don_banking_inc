@@ -26,3 +26,6 @@ go.work.sum
 
 #vs code
 *.vscode
+
+#generating file
+input.csv
