@@ -89,7 +89,7 @@ func (a *AccountStorage) WriteAccount(client domain.Client, currency domain.Curr
 
 	w := csv.NewWriter(f)
 
-	data := [][]string{{strconv.Itoa(client.ClientId), client.FirstName, client.LastName, currency.StringAcronym(), "0.0"}}
+	data := [][]string{{strconv.Itoa(client.ClientId), client.FirstName, client.LastName, currency.StringAcronym(), "0.00"}}
 
 	w.WriteAll(data)
 	if err := w.Error(); err != nil {
