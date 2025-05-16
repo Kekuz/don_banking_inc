@@ -32,7 +32,10 @@ func init() {
 		TempFileName: config.TempFileName,
 	}
 	var clientStorage service.ClientStorage = &csv.ClientStorage{
-		AccountFinder: accountStorage,
+		AccountFinder:  accountStorage,
+		FilePath:       config.FilePath,
+		FileName:       config.FileName,
+		SourceFilePath: config.SourceFilePath,
 	}
 
 	var accountService cli.AccountService = &service.AccountService{

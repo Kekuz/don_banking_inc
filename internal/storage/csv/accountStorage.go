@@ -11,10 +11,10 @@ import (
 	apperror "github.com/Kekuz/don_banking_inc/internal/error"
 )
 
-type AccountStorage struct{
- 	FilePath string
-	FileName string
-	TempFileName string 
+type AccountStorage struct {
+	FilePath     string
+	FileName     string
+	TempFileName string
 }
 
 // FindById is searching Accounts in csv file with name defined in csvConfig.go.
