@@ -74,8 +74,13 @@ func Run() {
 		uiStateError := PrintUiState()
 		handleError(uiStateError)
 
-		err := PrintUiClientMainMenu()
-		handleError(err)
+		if ui.currentAccount == domain.UNKNOWN {
+			err := PrintUiClientMainMenuWithoutSelectedAccount()
+			handleError(err)
+		} else {
+			err := PrintUiClientMainMenuWithSelectedAccount()
+			handleError(err)
+		}
 	}
 }
 
@@ -134,12 +139,12 @@ func PrintUiState() error {
 	return nil
 }
 
-func PrintUiClientMainMenu() error {
+func PrintUiClientMainMenuWithSelectedAccount() error {
 	fmt.Println("1. Создать счет")
 	fmt.Println("2. Выбрать счет")
 	fmt.Println("3. Положить деньги на счет")
 	fmt.Println("4. Снять деньги со счета")
-	fmt.Println("5. Удалить выбранный счет")
+	fmt.Println("5. Удалить счет")
 	fmt.Println("6. Вывести сериализованные данные о клиенте")
 
 	var input string
@@ -158,6 +163,27 @@ func PrintUiClientMainMenu() error {
 	case "5":
 		return deleteAccountScreen()
 	case "6":
+		return printClientJSON()
+	default:
+		return nil
+	}
+}
+
+func PrintUiClientMainMenuWithoutSelectedAccount() error {
+	fmt.Println("1. Создать счет")
+	fmt.Println("2. Выбрать счет")
+	fmt.Println("3. Вывести сериализованные данные о клиенте")
+
+	var input string
+	fmt.Scanf("%s\n", &input)
+	pkg.CallClear()
+
+	switch input {
+	case "1":
+		return createAccountScreen()
+	case "2":
+		return pickAccountScreen()
+	case "3":
 		return printClientJSON()
 	default:
 		return nil
@@ -286,6 +312,11 @@ func deleteAccountScreen() error {
 }
 
 func printClientJSON() error {
+	client, err := cliHandler.GetClientById(ui.ClientId)
+	if err != nil {
+		return err
+	}
+	ui.Client = client
 	data, err := json.Marshal(ui.Client)
 	if err != nil {
 		return err
