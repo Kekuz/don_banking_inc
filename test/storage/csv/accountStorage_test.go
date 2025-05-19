@@ -6,28 +6,25 @@ import (
 	"strconv"
 	"testing"
 
+	"slices"
+
 	"github.com/Kekuz/don_banking_inc/internal/domain"
 	"github.com/Kekuz/don_banking_inc/internal/storage/csv"
 	"github.com/Kekuz/don_banking_inc/pkg"
-	"slices"
 )
-
-var testData = [][]string{
-	{"1", "Davide", "Setter", "EUR", "865714.69"},
-	{"1", "Davide", "Setter", "RUB", "100000.00"},
-	{"2", "Micky", "Cliffe", "USD", "617605.25"},
-	{"3", "Tremaine", "Inwood", "EUR", "139207.20"},
-}
 
 func TestFindById1(t *testing.T) {
 	fileName := "testFindById1.csv"
 	filePath := "./testFindById1.csv"
 
-	// Делаем копию данных, чтобы не затронуть оригинальные данные во время теста
-	data := make([][]string, len(testData))
-	copy(data, testData)
+	var testData = [][]string{
+		{"1", "Davide", "Setter", "EUR", "865714.69"},
+		{"1", "Davide", "Setter", "RUB", "100000.00"},
+		{"2", "Micky", "Cliffe", "USD", "617605.25"},
+		{"3", "Tremaine", "Inwood", "EUR", "139207.20"},
+	}
 
-	err := pkg.CreateFile(fileName, data)
+	err := pkg.CreateFile(fileName, testData)
 	if err != nil {
 		t.Error(err)
 	}
@@ -62,11 +59,14 @@ func TestFindById2(t *testing.T) {
 	fileName := "testFindById2.csv"
 	filePath := "./testFindById2.csv"
 
-	// Делаем копию данных, чтобы не затронуть оригинальные данные во время теста
-	data := make([][]string, len(testData))
-	copy(data, testData)
+	var testData = [][]string{
+		{"1", "Davide", "Setter", "EUR", "865714.69"},
+		{"1", "Davide", "Setter", "RUB", "100000.00"},
+		{"2", "Micky", "Cliffe", "USD", "617605.25"},
+		{"3", "Tremaine", "Inwood", "EUR", "139207.20"},
+	}
 
-	err := pkg.CreateFile(fileName, data)
+	err := pkg.CreateFile(fileName, testData)
 	if err != nil {
 		t.Error(err)
 	}
@@ -105,11 +105,14 @@ func TestWriteAccount(t *testing.T) {
 	fileName := "testWriteAccount.csv"
 	filePath := "./testWriteAccount.csv"
 
-	// Делаем копию данных, чтобы не затронуть оригинальные данные во время теста
-	data := make([][]string, len(testData))
-	copy(data, testData)
+	var testData = [][]string{
+		{"1", "Davide", "Setter", "EUR", "865714.69"},
+		{"1", "Davide", "Setter", "RUB", "100000.00"},
+		{"2", "Micky", "Cliffe", "USD", "617605.25"},
+		{"3", "Tremaine", "Inwood", "EUR", "139207.20"},
+	}
 
-	err := pkg.CreateFile(fileName, data)
+	err := pkg.CreateFile(fileName, testData)
 	if err != nil {
 		t.Error(err)
 	}
@@ -127,7 +130,7 @@ func TestWriteAccount(t *testing.T) {
 	}
 	account := domain.RUB
 
-	expectedResult := append(data, []string{"3", "Tremaine", "Inwood", "RUB", "0.00"})
+	expectedResult := append(testData, []string{"3", "Tremaine", "Inwood", "RUB", "0.00"})
 
 	err = storage.WriteAccount(client, account)
 
@@ -150,11 +153,14 @@ func TestDeleteAccount(t *testing.T) {
 	filePath := "./testDeleteAccount.csv"
 	tempFileName := "tempTestDeleteAccount.csv"
 	
-	// Делаем копию данных, чтобы не затронуть оригинальные данные во время теста
-	data := make([][]string, len(testData))
-	copy(data, testData)
+	var testData = [][]string{
+		{"1", "Davide", "Setter", "EUR", "865714.69"},
+		{"1", "Davide", "Setter", "RUB", "100000.00"},
+		{"2", "Micky", "Cliffe", "USD", "617605.25"},
+		{"3", "Tremaine", "Inwood", "EUR", "139207.20"},
+	}
 
-	err := pkg.CreateFile(fileName, data)
+	err := pkg.CreateFile(fileName, testData)
 	if err != nil {
 		t.Error(err)
 	}
@@ -169,10 +175,9 @@ func TestDeleteAccount(t *testing.T) {
 
 	id := 1
 	account := domain.RUB
-
 	expectedDeletedIndex := 1
-	expectedResult := slices.Delete(data, expectedDeletedIndex, expectedDeletedIndex+1)
-	fmt.Println(data)
+	expectedResult := slices.Delete(testData, expectedDeletedIndex, expectedDeletedIndex+1)
+	
 
 	err = storage.DeleteAccount(id, account)
 
@@ -195,11 +200,14 @@ func TestUpdateAccountBalance(t *testing.T) {
 	filePath := "./testUpdateAccountBalance.csv"
 	tempFileName := "tempTestUpdateAccountBalance.csv"
 
-	// Делаем копию данных, чтобы не затронуть оригинальные данные во время теста
-	data := make([][]string, len(testData))
-	copy(data, testData)
+	var testData = [][]string{
+		{"1", "Davide", "Setter", "EUR", "865714.69"},
+		{"1", "Davide", "Setter", "RUB", "100000.00"},
+		{"2", "Micky", "Cliffe", "USD", "617605.25"},
+		{"3", "Tremaine", "Inwood", "EUR", "139207.20"},
+	}
 
-	err := pkg.CreateFile(fileName, data)
+	err := pkg.CreateFile(fileName, testData)
 	if err != nil {
 		t.Error(err)
 	}
@@ -222,16 +230,15 @@ func TestUpdateAccountBalance(t *testing.T) {
 	expectedUpdateIndex := 1
 	indexOfBalanceField := 4
 
-	updatedElement := data[expectedUpdateIndex]
+	updatedElement := testData[expectedUpdateIndex]
 	intUpdatedElement, err := strconv.ParseFloat(updatedElement[indexOfBalanceField], 64)
 	if err != nil {
 		t.Error(err)
 	}
 	updatedElement[indexOfBalanceField] = fmt.Sprintf("%.2f", intUpdatedElement+sumToAdd)
 
-	expectedResult := append(data[:expectedUpdateIndex], updatedElement)
-	expectedResult = append(expectedResult[:expectedUpdateIndex+1], data[expectedUpdateIndex+1:]...)
-	fmt.Println(data)
+	expectedResult := append(testData[:expectedUpdateIndex], updatedElement)
+	expectedResult = append(expectedResult[:expectedUpdateIndex+1], testData[expectedUpdateIndex+1:]...)
 
 	err = storage.UpdateAccountBalance(client, account, sumToAdd)
 
