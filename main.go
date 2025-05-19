@@ -1,7 +1,9 @@
 package main
 
-import "fmt"
+import (
+	"github.com/Kekuz/don_banking_inc/cli_ui"
+)
 
-func main(){
-	fmt.Println("This is Don banking APP!")
+func main() {
+	cliui.Run()
 }
